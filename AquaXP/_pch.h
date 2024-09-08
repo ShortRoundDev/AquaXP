@@ -10,17 +10,24 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
+//STL
 #include <vector>
 #include <map>
 #include <optional>
+#include <string>
+#include <memory>
+#include <stack>
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
+//DirectX
 #include "d3d11.h"
+#include "DirectXMath.h"
+#include <DirectXTK/WICTextureLoader.h>
+//Windows
+#include "wrl.h"
+#include <wrl/client.h>
 
+//Custom
 #include "Types.h"
-
-
+#include "Slots.h"
 
 #endif //PCH_H

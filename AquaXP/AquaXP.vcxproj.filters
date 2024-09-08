@@ -13,33 +13,72 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Framework">
+    <Filter Include="Header Files\Infrastructure">
+      <UniqueIdentifier>{e966a347-8064-41ca-a90e-4be1d51429e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Infrastructure">
       <UniqueIdentifier>{71aea383-ee6b-4982-ba43-d04178ca3c48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API">
+      <UniqueIdentifier>{45106f18-6646-4941-9afc-c8bd4f0b24f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\API">
+      <UniqueIdentifier>{b2f1dc21-6d9d-4b3d-a4d8-685481622536}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Helpers">
+      <UniqueIdentifier>{d876f3c3-25df-4fd2-99f0-c6be1e8da6bd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputLayoutBuilder.h">
+    <ClInclude Include="_pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputLayoutBuilder.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Header Files\API</Filter>
+    </ClInclude>
+    <ClInclude Include="StepTimer.h">
+      <Filter>Header Files\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Header Files\API</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelpers.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AquaXP.h">
+      <Filter>Header Files\API</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InputLayoutBuilder.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Source Files\API</Filter>
+    </ClCompile>
+    <ClCompile Include="StepTimer.cpp">
+      <Filter>Source Files\API</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\API</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Source Files\API</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

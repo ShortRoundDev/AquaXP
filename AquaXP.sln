@@ -7,8 +7,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AquaXP", "AquaXP\AquaXP.vcx
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{76B5385D-EDAE-4BA3-927B-48A4EFBB738A}"
 	ProjectSection(SolutionItems) = preProject
+		AquaXP.png = AquaXP.png
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AquaGlass", "AquaGlass\AquaGlass.vcxproj", "{695D0B43-64B0-4195-B469-FC8E3FEF41F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +29,14 @@ Global
 		{92F782B3-308D-438C-98B8-CAF561CA03C7}.Release|x64.Build.0 = Release|x64
 		{92F782B3-308D-438C-98B8-CAF561CA03C7}.Release|x86.ActiveCfg = Release|Win32
 		{92F782B3-308D-438C-98B8-CAF561CA03C7}.Release|x86.Build.0 = Release|Win32
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Debug|x64.ActiveCfg = Debug|x64
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Debug|x64.Build.0 = Debug|x64
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Debug|x86.ActiveCfg = Debug|Win32
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Debug|x86.Build.0 = Debug|Win32
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Release|x64.ActiveCfg = Release|x64
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Release|x64.Build.0 = Release|x64
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Release|x86.ActiveCfg = Release|Win32
+		{695D0B43-64B0-4195-B469-FC8E3FEF41F6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

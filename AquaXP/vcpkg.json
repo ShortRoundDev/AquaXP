@@ -3,6 +3,7 @@
     "name": "aqua-xp",
     "version": "0.1.0",
     "dependencies": [
+        "directxtk",
         "ms-gltf",
         "yaml-cpp"
     ]
