@@ -4,14 +4,12 @@
 #include "StepTimer.h"
 #include "Graphics.h"
 
-#include "Types.h"
-
 namespace AquaXP
 {
     class Application
     {
     public:
-        Application(
+        AQUAXP_API Application(
             u16 width,
             u16 height,
             std::wstring const& title,
@@ -19,75 +17,37 @@ namespace AquaXP
             bool fullscreen = false,
             bool enableTitlebar = true,
             bool fixedTimestep = false
-        ) : m_width(width),
-            m_height(height),
-            m_title(title),
-            m_vSync(vSync),
-            m_fullscreen(fullscreen),
-            m_enableTitlebar(enableTitlebar),
-            m_fixedTimestep(fixedTimestep),
+        );
+        AQUAXP_API ~Application();
 
-            m_hwnd(),
-            m_instance()
-        {
-            initWaterfall({
-                &Application::initWindow,
-                &Application::initDirectX
-            });
-        }
-
-        ~Application();
-
-        void run(void(*draw)(Application*), void(*update)(Application*, f32));
+        AQUAXP_API void run(void(*draw)(Application*), void(*update)(Application*, f32));
 
         /* Getters/Setters */
-        std::wstring const& getTitle() const;
-        void setTitle(std::wstring const& title);
+        AQUAXP_API wchar_t const* getTitle() const;
+        AQUAXP_API void setTitle(std::wstring const& title);
 
-        bool isVsync() const;
-        void setVsync(bool vSync);
+        AQUAXP_API bool isVsync() const;
+        AQUAXP_API void setVsync(bool vSync);
 
-        bool isFullscreen() const;
-        void setFullscreen(bool fullscreen);
+        AQUAXP_API bool isFullscreen() const;
+        AQUAXP_API void setFullscreen(bool fullscreen);
 
-        bool isTitlebarEnabled() const;
+        AQUAXP_API bool isTitlebarEnabled() const;
 
-        bool isFixedTimestep() const;
+        AQUAXP_API bool isFixedTimestep() const;
 
-        HWND getHWND() const;
-        HINSTANCE getInstance() const;
+        AQUAXP_API HWND getHWND() const;
+        AQUAXP_API HINSTANCE getInstance() const;
 
-        u16 getWidth() const;
-        u16 getHeight() const;
+        AQUAXP_API u16 getWidth() const;
+        AQUAXP_API u16 getHeight() const;
 
-        Graphics* getGraphics() const;
+        AQUAXP_API Graphics* getGraphics() const;
 
     private:
         /* Settings */
-        std::wstring const* m_title;
-        bool m_vSync;
-        bool m_fullscreen;
-        bool m_enableTitlebar;
-        bool m_fixedTimestep;
-
-        /* Custom */
-        StepTimer m_timer;
-
-        /* Windows */
-        HWND m_hwnd;
-        HINSTANCE m_instance;
-        u16 m_width;
-        u16 m_height;
-
-        /* DirectX */
-        std::unique_ptr<Graphics> m_graphics;
-
-        /* Initializers */
-        using Initializer = bool(Application::*)();
-        bool initWaterfall(std::initializer_list<Initializer> initializers);
-
-        bool initWindow();
-        bool initDirectX();
+        class impl;
+        std::unique_ptr<impl> m_pimpl;
     };
 }
 

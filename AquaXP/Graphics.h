@@ -11,36 +11,28 @@ namespace AquaXP
     };
 
     class Application;
-    class AQUAXP_API Graphics
+    class Graphics
     {
     public:
-        Graphics(Application* application);
+        AQUAXP_API Graphics(
+            u16 width,
+            u16 height,
+            HWND hwnd,
+            bool fullscreen
+        );
+        AQUAXP_API ~Graphics();
 
-        Microsoft::WRL::ComPtr<ID3D11Device> getDevice() const;
-        Microsoft::WRL::ComPtr<ID3D11DeviceContext> getContext() const;
-        Microsoft::WRL::ComPtr<IDXGISwapChain> getSwapChain() const;
+        AQUAXP_API ID3D11Device* getDevice() const;
+        AQUAXP_API ID3D11DeviceContext* getContext() const;
+        AQUAXP_API IDXGISwapChain* getSwapChain() const;
 
-        void pushRenderTarget(RenderTarget const& renderTarget);
-        void pushRenderTarget(Texture const& renderTarget);
-        void pushRenderTarget(Texture const* renderTarget);
-        void popRenderTarget();
+        AQUAXP_API void pushRenderTarget(RenderTarget const& renderTarget);
+        AQUAXP_API void pushRenderTarget(Texture const& renderTarget);
+        AQUAXP_API void pushRenderTarget(Texture const* renderTarget);
+        AQUAXP_API void popRenderTarget();
 
     private:
-        Microsoft::WRL::ComPtr<ID3D11Device> m_device;
-        Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
-        Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
-        DXGI_MODE_DESC m_displayMode;
-
-        std::unique_ptr<Texture const> m_backBuffer;
-        std::stack<RenderTarget> m_renderTargets;
-
-        using Initializer = bool(Graphics::*)(Application* application);
-        bool initWaterfall(Application* application, std::initializer_list<Initializer> initializers);
-
-        bool initInfrastructure(Application* application);
-        bool initSwapchain(Application* application);
-        bool initRenderTarget(Application* application);
-
-        void setRenderTarget(RenderTarget const& renderTarget);
+        class impl;
+        std::unique_ptr<impl> m_pimpl;
     };
 }
