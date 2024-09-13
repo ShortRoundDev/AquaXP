@@ -23,7 +23,7 @@ namespace AquaXP
         AQUAXP_API void run(void(*draw)(Application*), void(*update)(Application*, f32));
 
         /* Getters/Setters */
-        AQUAXP_API wchar_t const* getTitle() const;
+        AQUAXP_API std::wstring const& getTitle() const;
         AQUAXP_API void setTitle(std::wstring const& title);
 
         AQUAXP_API bool isVsync() const;
@@ -39,8 +39,11 @@ namespace AquaXP
         AQUAXP_API HWND getHWND() const;
         AQUAXP_API HINSTANCE getInstance() const;
 
-        AQUAXP_API u16 getWidth() const;
-        AQUAXP_API u16 getHeight() const;
+        AQUAXP_API u16 getWindowWidth() const;
+        AQUAXP_API u16 getWindowHeight() const;
+
+        AQUAXP_API u16 getClientWidth() const;
+        AQUAXP_API u16 getClientHeight() const;
 
         AQUAXP_API Graphics* getGraphics() const;
 

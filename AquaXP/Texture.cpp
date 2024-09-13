@@ -132,7 +132,7 @@ public:
         m_status = initializeResources(device, flags);
     }
 
-    impl(ID3D11Device* device, ID3D11DeviceContext* context, f32 width, f32 height, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE) :
+    impl(ID3D11Device* device, f32 width, f32 height, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE) :
         m_resource(),
         m_texture2D(),
         m_depthStencilTexture(),
@@ -166,6 +166,36 @@ public:
         if (flags & D3D11_BIND_SHADER_RESOURCE)
         {
             if (FAILED(device->CreateShaderResourceView(m_texture2D.Get(), nullptr, &m_shaderResourceView)))
+            {
+                m_status = false;
+                return;
+            }
+        }
+
+        m_status = initializeResources(device, flags);
+    }
+
+    impl(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
+        m_resource(raw),
+        m_texture2D(raw),
+        m_depthStencilTexture(),
+        m_shaderResourceView(),
+        m_depthStencilView(),
+        m_renderTargetView(),
+        m_flags(flags),
+        m_width(),
+        m_height(),
+        m_status(false)
+    {
+        D3D11_TEXTURE2D_DESC desc;
+        m_texture2D->GetDesc(&desc);
+
+        m_width = static_cast<f32>(desc.Width);
+        m_height = static_cast<f32>(desc.Height);
+
+        if (flags & D3D11_BIND_SHADER_RESOURCE)
+        {
+            if (FAILED(device->CreateShaderResourceView(m_texture2D.Get(), nullptr, m_shaderResourceView.GetAddressOf())))
             {
                 m_status = false;
                 return;
@@ -241,25 +271,37 @@ public:
     }
 };
 
+
+Texture::Texture(Graphics* graphics, std::string const& path, D3D11_BIND_FLAG flags) :
+    Texture(graphics->getDevice().Get(), graphics->getContext().Get(), path, flags) { }
+
 Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, std::string const& path, D3D11_BIND_FLAG flags) :
-    m_pimpl(std::make_unique<Texture::impl>(device, context, path, flags))
-{
-}
+    m_pimpl(std::make_unique<Texture::impl>(device, context, path, flags)) { }
+
+Texture::Texture(Graphics* graphics, std::wstring const& path, D3D11_BIND_FLAG flags) :
+    Texture(graphics->getDevice().Get(), graphics->getContext().Get(), path, flags) { }
 
 Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, std::wstring const& path, D3D11_BIND_FLAG flags) :
-    m_pimpl(std::make_unique<Texture::impl>(device, context, path, flags))
-{
-}
+    m_pimpl(std::make_unique<Texture::impl>(device, context, path, flags)) { }
+
+Texture::Texture(Graphics* graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags) :
+    Texture(graphics->getDevice().Get(), graphics->getContext().Get(), data, size, flags) { }
 
 Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, u8 const* data, sz size, D3D11_BIND_FLAG flags) :
-    m_pimpl(std::make_unique<Texture::impl>(device, context, data, size, flags))
-{
-}
+    m_pimpl(std::make_unique<Texture::impl>(device, context, data, size, flags)) { }
 
-Texture::Texture(ID3D11Device* device, ID3D11DeviceContext* context, f32 width, f32 height, D3D11_BIND_FLAG flags) :
-    m_pimpl(std::make_unique<Texture::impl>(device, context, width, height, flags))
-{
-}
+Texture::Texture(Graphics* graphics, f32 width, f32 height, D3D11_BIND_FLAG flags) :
+    Texture(graphics->getDevice().Get(), width, height, flags) { }
+
+Texture::Texture(ID3D11Device* device, f32 width, f32 height, D3D11_BIND_FLAG flags) :
+    m_pimpl(std::make_unique<Texture::impl>(device, width, height, flags)) { }
+
+Texture::Texture(Graphics* graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
+    Texture(graphics->getDevice().Get(), raw, flags) { }
+
+Texture::Texture(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
+    m_pimpl(std::make_unique<Texture::impl>(device, raw, flags)) { }
+
 
 Texture::~Texture() = default;
 
@@ -271,29 +313,39 @@ void Texture::use(Graphics const* graphics, u32 slot) const
     }
 }
 
-ID3D11Resource* Texture::getResource() const
+Microsoft::WRL::ComPtr<ID3D11Resource> Texture::getResource() const
 {
-    return m_pimpl->m_resource.Get();
+    return m_pimpl->m_resource;
 }
 
-ID3D11Texture2D* Texture::getTexture2D() const
+Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture::getTexture2D() const
 {
-    return m_pimpl->m_texture2D.Get();
+    return m_pimpl->m_texture2D;
 }
 
-ID3D11ShaderResourceView* Texture::getShaderResourceView() const
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Texture::getShaderResourceView() const
 {
-    return m_pimpl->m_shaderResourceView.Get();
+    return m_pimpl->m_shaderResourceView;
 }
 
-ID3D11DepthStencilView* Texture::getDepthStencilView() const
+Microsoft::WRL::ComPtr<ID3D11DepthStencilView> Texture::getDepthStencilView() const
 {
-    return m_pimpl->m_depthStencilView.Get();
+    return m_pimpl->m_depthStencilView;
 }
 
-ID3D11RenderTargetView* Texture::getRenderTargetView() const
+Microsoft::WRL::ComPtr<ID3D11RenderTargetView> Texture::getRenderTargetView() const
 {
-    return m_pimpl->m_renderTargetView.Get();
+    return m_pimpl->m_renderTargetView;
+}
+
+f32 Texture::getWidth() const
+{
+    return m_pimpl->m_width;
+}
+
+f32 Texture::getHeight() const
+{
+    return m_pimpl->m_height;
 }
 
 D3D11_BIND_FLAG Texture::getFlags() const

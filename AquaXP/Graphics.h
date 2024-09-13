@@ -7,7 +7,6 @@ namespace AquaXP
     {
         Texture const* renderTargets;
         sz numRenderTargets;
-        Texture const* depthStencil;
     };
 
     class Application;
@@ -22,14 +21,17 @@ namespace AquaXP
         );
         AQUAXP_API ~Graphics();
 
-        AQUAXP_API ID3D11Device* getDevice() const;
-        AQUAXP_API ID3D11DeviceContext* getContext() const;
-        AQUAXP_API IDXGISwapChain* getSwapChain() const;
+        AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Device> getDevice() const;
+        AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DeviceContext> getContext() const;
+        AQUAXP_API Microsoft::WRL::ComPtr<IDXGISwapChain> getSwapChain() const;
+        AQUAXP_API Texture const* getBackBuffer() const;
 
-        AQUAXP_API void pushRenderTarget(RenderTarget const& renderTarget);
-        AQUAXP_API void pushRenderTarget(Texture const& renderTarget);
-        AQUAXP_API void pushRenderTarget(Texture const* renderTarget);
-        AQUAXP_API void popRenderTarget();
+        AQUAXP_API void setRenderTarget(RenderTarget const& renderTarget);
+        AQUAXP_API void setRenderTarget(Texture const* renderTarget);
+        AQUAXP_API RenderTarget const& getRenderTarget() const;
+
+        AQUAXP_API void setDepthBuffer(Texture const* depthBuffer);
+        AQUAXP_API Texture const* getDepthBuffer() const;
 
     private:
         class impl;

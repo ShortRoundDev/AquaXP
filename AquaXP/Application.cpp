@@ -49,24 +49,6 @@ public:
     /* DirectX */
     std::unique_ptr<Graphics> m_graphics;
 
-    /* Initializers */
-    using Initializer = bool(Application::impl::*)(Application* application);
-    bool initWaterfall(
-        Application* application,
-        std::initializer_list<Initializer> initializers
-    )
-    {
-        for (auto initializer : initializers)
-        {
-            if (!(this->*initializer)(application))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     bool initWindow()
     {
         m_instance = GetModuleHandle(nullptr);
@@ -117,6 +99,7 @@ public:
 
     bool initDirectX()
     {
+
         m_graphics = std::make_unique<Graphics>(m_width, m_height, m_hwnd, m_fullscreen);
         return true;
     }
@@ -144,6 +127,20 @@ public:
                 draw(application);
             }
         }
+    }
+
+    u16 getClientWidth() const
+    {
+        RECT clientRect;
+        GetClientRect(m_hwnd, &clientRect);
+        return clientRect.right - clientRect.left;
+    }
+
+    u16 getClientHeight() const
+    {
+        RECT clientRect;
+        GetClientRect(m_hwnd, &clientRect);
+        return clientRect.bottom - clientRect.top;
     }
 };
 
@@ -189,9 +186,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
     return 0;
 }
 
-wchar_t const* Application::getTitle() const
+std::wstring const& Application::getTitle() const
 {
-    return m_pimpl->m_title.c_str();
+    return m_pimpl->m_title;
 }
 
 void Application::setTitle(std::wstring const& title)
@@ -239,14 +236,24 @@ HINSTANCE Application::getInstance() const
     return m_pimpl->m_instance;
 }
 
-u16 Application::getWidth() const
+u16 Application::getWindowWidth() const
 {
     return m_pimpl->m_width;
 }
 
-u16 Application::getHeight() const
+u16 Application::getWindowHeight() const
 {
     return m_pimpl->m_height;
+}
+
+u16 Application::getClientWidth() const
+{
+    return m_pimpl->getClientWidth();
+}
+
+u16 Application::getClientHeight() const
+{
+    return m_pimpl->getClientHeight();
 }
 
 Graphics* Application::getGraphics() const

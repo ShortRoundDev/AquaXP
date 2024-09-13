@@ -30,7 +30,8 @@ public:
     DXGI_MODE_DESC m_displayMode;
 
     std::unique_ptr<Texture const> m_backBuffer;
-    std::stack<RenderTarget> m_renderTargets;
+    RenderTarget m_renderTarget;
+    Texture const* m_depthBuffer;
 
     using Initializer = bool(Graphics::impl::*)(Application* application);
     bool initWaterfall(
@@ -136,11 +137,15 @@ public:
 
     bool initRenderTarget(u16 width, u16 height)
     {
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+        if (FAILED(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf())))
+        {
+            return false;
+        }
+
         m_backBuffer = std::make_unique<Texture>(
             m_device.Get(),
-            m_context.Get(),
-            static_cast<f32>(width),
-            static_cast<f32>(height),
+            backBuffer,
             static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET)
         );
         return true;
@@ -149,6 +154,8 @@ public:
     void setRenderTarget(RenderTarget const& renderTarget)
     {
         static thread_local ID3D11RenderTargetView* s_renderTargetViews[8];
+
+        m_renderTarget = renderTarget;
         ZeroMemory(s_renderTargetViews, sizeof(s_renderTargetViews));
 
         if (renderTarget.renderTargets == nullptr || renderTarget.numRenderTargets == 0)
@@ -158,13 +165,23 @@ public:
 
         for (i32 i = 0; i < renderTarget.numRenderTargets; i++)
         {
-            s_renderTargetViews[i] = renderTarget.renderTargets[i].getRenderTargetView();
+            s_renderTargetViews[i] = renderTarget.renderTargets[i].getRenderTargetView().Get();
         }
 
         m_context->OMSetRenderTargets(
             static_cast<u32>(renderTarget.numRenderTargets),
             s_renderTargetViews,
-            renderTarget.depthStencil->getDepthStencilView()
+            nullptr
+        );
+    }
+
+    void setDepthBuffer(Texture const* texture)
+    {
+        m_depthBuffer = texture;
+        m_context->OMSetRenderTargets(
+            0,
+            nullptr,
+            texture->getDepthStencilView().Get()
         );
     }
 };
@@ -181,70 +198,51 @@ Graphics::Graphics(
 
 Graphics::~Graphics() = default;
 
-ID3D11Device* Graphics::getDevice() const
+Microsoft::WRL::ComPtr<ID3D11Device> Graphics::getDevice() const
 {
-    return m_pimpl->m_device.Get();
+    return m_pimpl->m_device;
 }
 
-ID3D11DeviceContext* Graphics::getContext() const
+Microsoft::WRL::ComPtr<ID3D11DeviceContext> Graphics::getContext() const
 {
-    return m_pimpl->m_context.Get();
+    return m_pimpl->m_context;
 }
 
-IDXGISwapChain* Graphics::getSwapChain() const
+Microsoft::WRL::ComPtr<IDXGISwapChain> Graphics::getSwapChain() const
 {
-    return m_pimpl->m_swapChain.Get();
+    return m_pimpl->m_swapChain;
 }
 
-void Graphics::pushRenderTarget(RenderTarget const& renderTarget)
+Texture const* Graphics::getBackBuffer() const
 {
-    m_pimpl->m_renderTargets.push(renderTarget);
+    return m_pimpl->m_backBuffer.get();
+}
+
+void Graphics::setRenderTarget(RenderTarget const& renderTarget)
+{
     m_pimpl->setRenderTarget(renderTarget);
 }
 
-void Graphics::pushRenderTarget(Texture const& renderTarget)
-{
-    RenderTarget rt = {
-        &renderTarget,
-        1,
-        (renderTarget.getFlags() & D3D11_BIND_DEPTH_STENCIL)
-            ? &renderTarget
-            : nullptr
-    };
-    pushRenderTarget(rt);
-}
-
-void Graphics::pushRenderTarget(Texture const* renderTarget)
+void Graphics::setRenderTarget(Texture const* renderTarget)
 {
     RenderTarget rt = {
         renderTarget,
-        1,
-        (renderTarget->getFlags() & D3D11_BIND_DEPTH_STENCIL)
-            ? renderTarget
-            : nullptr
+        1
     };
-    pushRenderTarget(rt);
+    setRenderTarget(rt);
 }
 
-void Graphics::popRenderTarget()
+void Graphics::setDepthBuffer(Texture const* depthBuffer)
 {
+    m_pimpl->setDepthBuffer(depthBuffer);
+}
 
-    if (!m_pimpl->m_renderTargets.empty())
-    {
-        m_pimpl->m_renderTargets.pop();
-    }
+Texture const* Graphics::getDepthBuffer() const
+{
+    return m_pimpl->m_depthBuffer;
+}
 
-    if (m_pimpl->m_renderTargets.empty())
-    {
-        RenderTarget rt = {
-            m_pimpl->m_backBuffer.get(),
-            1,
-            m_pimpl->m_backBuffer.get()
-        };
-        m_pimpl->setRenderTarget(rt);
-    }
-    else
-    {
-        m_pimpl->setRenderTarget(m_pimpl->m_renderTargets.top());
-    }
+RenderTarget const& Graphics::getRenderTarget() const
+{
+    return m_pimpl->m_renderTarget;
 }
