@@ -28,6 +28,15 @@
     <Filter Include="Header Files\Helpers">
       <UniqueIdentifier>{d876f3c3-25df-4fd2-99f0-c6be1e8da6bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\API\Shaders">
+      <UniqueIdentifier>{8d664a24-78f7-4333-89cb-642833f33533}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API\Shaders">
+      <UniqueIdentifier>{8548bd16-2f5c-4969-ad71-93f0fde63f0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Helpers">
+      <UniqueIdentifier>{2a7c2bd4-7e10-4fe6-b643-d60ba7ef1948}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -63,6 +72,12 @@
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VertexShader.h">
+      <Filter>Header Files\API\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="FileHelpers.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -88,6 +103,12 @@
     </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexShader.cpp">
+      <Filter>Source Files\API\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="FileHelpers.cpp">
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

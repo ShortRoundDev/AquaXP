@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="AquaXP.h" />
+    <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="InputLayoutBuilder.h" />
@@ -158,10 +159,12 @@
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Types.h" />
+    <ClInclude Include="VertexShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FileHelpers.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="InputLayoutBuilder.cpp" />
     <ClCompile Include="pch.cpp">
@@ -171,6 +174,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StepTimer.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="VertexShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
