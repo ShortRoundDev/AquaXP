@@ -25,7 +25,7 @@
 //Windows
 #include "wrl.h"
 #include <wrl/client.h>
-#include "pal.h"
+//#include "pal.h"
 
 //Custom
 #include "Types.h"

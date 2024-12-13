@@ -216,3 +216,10 @@ InputLayoutBuilder& InputLayoutBuilder::addTexCoord(
     return *this;
 }
 
+std::pair<D3D11_INPUT_ELEMENT_DESC const*, UINT> InputLayoutBuilder::build() const
+{
+    return std::make_pair<D3D11_INPUT_ELEMENT_DESC const*, UINT>(
+        m_pimpl->m_layoutBuffer.data(),
+        static_cast<UINT>(m_pimpl->m_layoutBuffer.size())
+    );
+}

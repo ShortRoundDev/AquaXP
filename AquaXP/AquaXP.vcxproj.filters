@@ -37,6 +37,24 @@
     <Filter Include="Source Files\Helpers">
       <UniqueIdentifier>{2a7c2bd4-7e10-4fe6-b643-d60ba7ef1948}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\API\Mesh">
+      <UniqueIdentifier>{6d71dcea-8a68-4140-ae49-5bfc56abe1e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API\Mesh">
+      <UniqueIdentifier>{c91689e7-1849-4029-9131-592a13c35c33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\API\Texture">
+      <UniqueIdentifier>{262a6264-cbfd-4bbe-8d62-c91838c5152b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API\Texture">
+      <UniqueIdentifier>{ff5776f1-7142-4942-a409-912b7f702193}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API\CBuffer">
+      <UniqueIdentifier>{73d4915b-c126-4d59-9184-134dbfd3b169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\API\CBuffer">
+      <UniqueIdentifier>{4fdd70a1-9616-49d1-819d-fd1d82fc0afe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -54,9 +72,6 @@
     <ClInclude Include="StepTimer.h">
       <Filter>Header Files\API</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files\API</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics.h">
       <Filter>Header Files\API</Filter>
     </ClInclude>
@@ -69,14 +84,26 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VertexShader.h">
       <Filter>Header Files\API\Shaders</Filter>
     </ClInclude>
     <ClInclude Include="FileHelpers.h">
       <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelShader.h">
+      <Filter>Header Files\API\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderHelper.h">
+      <Filter>Header Files\API\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files\API\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files\API\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="CBuffer.h">
+      <Filter>Header Files\API\CBuffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -92,16 +119,10 @@
     <ClCompile Include="StepTimer.cpp">
       <Filter>Source Files\API</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source Files\API</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics.cpp">
       <Filter>Source Files\API</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VertexShader.cpp">
@@ -109,6 +130,18 @@
     </ClCompile>
     <ClCompile Include="FileHelpers.cpp">
       <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelShader.cpp">
+      <Filter>Source Files\API\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files\API\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\API\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="CBuffer.cpp">
+      <Filter>Source Files\API\CBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

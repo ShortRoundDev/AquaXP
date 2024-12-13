@@ -88,6 +88,8 @@ namespace AquaXP
             D3D11_INPUT_CLASSIFICATION inputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
             UINT instanceDataStepRate = 0
         );
+
+        AQUAXP_API std::pair<D3D11_INPUT_ELEMENT_DESC const*, UINT> build() const;
     private:
         class impl;
         std::unique_ptr<impl> m_pimpl;

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -149,12 +149,15 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="AquaXP.h" />
+    <ClInclude Include="CBuffer.h" />
     <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="InputLayoutBuilder.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="ShaderHelper.h" />
     <ClInclude Include="StepTimer.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="Texture.h" />
@@ -163,15 +166,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="CBuffer.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FileHelpers.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="InputLayoutBuilder.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="StepTimer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VertexShader.cpp" />

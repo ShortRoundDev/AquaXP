@@ -9,7 +9,15 @@ int main()
 {
     Application app(800, 600, L"AquaGlass", false, false, true, true);
     auto clientRtv = app.getGraphics()->getBackBuffer();
-    std::cout << clientRtv->getWidth() << ", " << clientRtv->getHeight() << std::endl;
+
+    auto graphics = app.getGraphics();
+    auto device = graphics->getDevice().Get();
+    auto context = graphics->getContext().Get();
+
+    CBuffer<int> cameraBuffer(device, 0);
+
+    cameraBuffer.bind(context);
+
     app.run(
         [](Application* appl)
         {

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stack>
+#include <optional>
+#include <vector>
 
 #include "framework.h"
 
@@ -14,3 +16,7 @@
 #include "Application.h"
 #include "Graphics.h"
 #include "Texture.h"
+#include "VertexShader.h"
+#include "PixelShader.h"
+#include "Mesh.h"
+#include "CBuffer.h"
