@@ -12,7 +12,6 @@ namespace AquaXP
         AQUAXP_API void use(ID3D11DeviceContext* context) const;
     
     private:
-        class impl;
-        std::unique_ptr<impl> m_pimpl;
+        Microsoft::WRL::ComPtr<ID3D11PixelShader> m_shader;
     };
 }

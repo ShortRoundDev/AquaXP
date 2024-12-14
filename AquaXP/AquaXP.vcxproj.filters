@@ -49,9 +49,6 @@
     <Filter Include="Source Files\API\Texture">
       <UniqueIdentifier>{ff5776f1-7142-4942-a409-912b7f702193}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\API\CBuffer">
-      <UniqueIdentifier>{73d4915b-c126-4d59-9184-134dbfd3b169}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\API\CBuffer">
       <UniqueIdentifier>{4fdd70a1-9616-49d1-819d-fd1d82fc0afe}</UniqueIdentifier>
     </Filter>
@@ -139,9 +136,6 @@
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\API\Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="CBuffer.cpp">
-      <Filter>Source Files\API\CBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

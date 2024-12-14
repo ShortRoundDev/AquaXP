@@ -19,7 +19,7 @@ namespace AquaXP
             HWND hwnd,
             bool fullscreen
         );
-        AQUAXP_API ~Graphics();
+        AQUAXP_API ~Graphics() = default;
 
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Device> getDevice() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DeviceContext> getContext() const;
@@ -34,7 +34,24 @@ namespace AquaXP
         AQUAXP_API Texture const* getDepthBuffer() const;
 
     private:
-        class impl;
-        std::unique_ptr<impl> m_pimpl;
+        Microsoft::WRL::ComPtr<ID3D11Device> m_device;
+        Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
+        Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
+        DXGI_MODE_DESC m_displayMode;
+
+        std::unique_ptr<Texture const> m_backBuffer;
+        RenderTarget m_renderTarget;
+        Texture const* m_depthBuffer;
+
+        using Initializer = bool(Graphics::*)(Application* application);
+        bool initWaterfall(
+            Application* application,
+            std::initializer_list<Initializer> initializers
+        );
+
+        bool initInfrastructure(u16 width, u16 height);
+        bool initSwapchain(HWND hwnd, bool fullscreen);
+        bool initRenderTarget(u16 width, u16 height);
+
     };
 }

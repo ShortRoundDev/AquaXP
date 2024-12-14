@@ -43,7 +43,21 @@ namespace AquaXP
         AQUAXP_API void clearDepth(Graphics const* graphics);
 
     private:
-        class impl;
-        std::unique_ptr<impl> m_pimpl;
+        bool m_status;
+
+        Microsoft::WRL::ComPtr<ID3D11Resource> m_resource;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture2D;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilTexture;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_shaderResourceView;
+        Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+        Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+
+        D3D11_BIND_FLAG m_flags;
+        Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
+
+        f32 m_width;
+        f32 m_height;
+
+        bool initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags);
     };
 }

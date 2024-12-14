@@ -16,7 +16,14 @@ namespace AquaXP
         AQUAXP_API void use(ID3D11DeviceContext* context) const;
 
     private:
-        class impl;
-        std::unique_ptr<impl> m_pimpl;
+        Microsoft::WRL::ComPtr<ID3D11VertexShader> m_shader;
+        Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+
+        bool initInputLayout(
+            ID3D11Device* device,
+            InputLayoutBuilder const& inputLayoutBuilder,
+            u8* byteCode,
+            sz byteCodeLength
+        );
     };
 }

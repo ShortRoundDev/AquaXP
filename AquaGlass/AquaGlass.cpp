@@ -5,6 +5,11 @@
 
 using namespace AquaXP;
 
+struct alignas(16) Foo
+{
+    int x, y;
+};
+
 int main()
 {
     Application app(800, 600, L"AquaGlass", false, false, true, true);
@@ -14,7 +19,11 @@ int main()
     auto device = graphics->getDevice().Get();
     auto context = graphics->getContext().Get();
 
-    CBuffer<int> cameraBuffer(device, 0);
+    Foo foo;
+    foo.x = 1;
+    foo.y = 2;
+
+    CBuffer<Foo> cameraBuffer(device, foo);
 
     cameraBuffer.bind(context);
 

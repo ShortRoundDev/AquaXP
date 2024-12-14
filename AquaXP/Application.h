@@ -18,7 +18,7 @@ namespace AquaXP
             bool enableTitlebar = true,
             bool fixedTimestep = false
         );
-        AQUAXP_API ~Application();
+        AQUAXP_API ~Application() = default;
 
         AQUAXP_API void run(void(*draw)(Application*), void(*update)(Application*, f32));
 
@@ -49,8 +49,28 @@ namespace AquaXP
 
     private:
         /* Settings */
-        class impl;
-        std::unique_ptr<impl> m_pimpl;
+        
+        /* Window info */
+        wstring m_title;
+        bool m_vSync;
+        bool m_fullscreen;
+        bool m_enableTitlebar;
+        bool m_fixedTimestep;
+
+        /* Custom */
+        StepTimer m_timer;
+
+        /* Win32 */
+        HWND m_hwnd;
+        HINSTANCE m_instance;
+        u16 m_width;
+        u16 m_height;
+
+        /* DirectX */
+        std::unique_ptr<Graphics> m_graphics;
+
+        bool initWindow();
+        bool initDirectX();
     };
 }
 

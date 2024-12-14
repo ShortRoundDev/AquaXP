@@ -4,17 +4,8 @@
 using namespace AquaXP;
 using namespace std;
 
-class InputLayoutBuilder::impl
-{
-public:
-    impl() :
-        m_layoutBuffer()
-    {
-    }
-
-    vector<D3D11_INPUT_ELEMENT_DESC> m_layoutBuffer;
-
-};
+InputLayoutBuilder::InputLayoutBuilder() :
+    m_layoutBuffer() { }
 
 InputLayoutBuilder& InputLayoutBuilder::addBinormal(
     UINT semanticIndex,
@@ -25,13 +16,13 @@ InputLayoutBuilder& InputLayoutBuilder::addBinormal(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "BINORMAL",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
@@ -50,19 +41,19 @@ InputLayoutBuilder& InputLayoutBuilder::addBlendIndices(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "BLENDINDICES",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
@@ -75,19 +66,19 @@ InputLayoutBuilder& InputLayoutBuilder::addBlendWeight(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "BLENDWEIGHT",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
@@ -100,19 +91,19 @@ InputLayoutBuilder& InputLayoutBuilder::addColor(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "COLOR",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
@@ -125,19 +116,19 @@ InputLayoutBuilder& InputLayoutBuilder::addNormal(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "NORMAL",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
@@ -150,19 +141,19 @@ InputLayoutBuilder& InputLayoutBuilder::addPosition(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "POSITION",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
@@ -175,19 +166,19 @@ InputLayoutBuilder& InputLayoutBuilder::addTangent(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "TANGENT",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
@@ -200,26 +191,26 @@ InputLayoutBuilder& InputLayoutBuilder::addTexCoord(
     UINT instanceDataStepRate
 )
 {
-    m_pimpl->m_layoutBuffer.push_back({
+    m_layoutBuffer.push_back({
         "TEXCOORD",
         semanticIndex,
         format,
         inputSlot,
         alignedByteOffset.value_or(
-            m_pimpl->m_layoutBuffer.empty()
+            m_layoutBuffer.empty()
                 ? 0
                 : D3D11_APPEND_ALIGNED_ELEMENT
         ),
         inputSlotClass,
         instanceDataStepRate
-        });
+    });
     return *this;
 }
 
 std::pair<D3D11_INPUT_ELEMENT_DESC const*, UINT> InputLayoutBuilder::build() const
 {
     return std::make_pair<D3D11_INPUT_ELEMENT_DESC const*, UINT>(
-        m_pimpl->m_layoutBuffer.data(),
-        static_cast<UINT>(m_pimpl->m_layoutBuffer.size())
+        m_layoutBuffer.data(),
+        static_cast<UINT>(m_layoutBuffer.size())
     );
 }

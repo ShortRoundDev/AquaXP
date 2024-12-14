@@ -33,8 +33,16 @@ namespace AquaXP
         AQUAXP_API void useAndDraw(ID3D11DeviceContext* device, UINT slot = 0) const;
 
     private:
-        class impl;
+        Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
+        Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
+        u32 m_indexCount;
 
-        std::unique_ptr<impl> m_pimpl;
+        bool uploadVertexData(
+            ID3D11Device const* device,
+            T const* vertices,
+            UINT vertexCount,
+            UINT const* indices,
+            UINT indexCount
+        );
     };
 }

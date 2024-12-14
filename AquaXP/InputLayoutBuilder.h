@@ -7,6 +7,8 @@ namespace AquaXP
     class InputLayoutBuilder
     {
     public:
+        InputLayoutBuilder();
+
         /// <summary>
         /// Adds a binormal to the input layout.
         /// </summary>
@@ -90,8 +92,8 @@ namespace AquaXP
         );
 
         AQUAXP_API std::pair<D3D11_INPUT_ELEMENT_DESC const*, UINT> build() const;
+    
     private:
-        class impl;
-        std::unique_ptr<impl> m_pimpl;
+        std::vector<D3D11_INPUT_ELEMENT_DESC> m_layoutBuffer;
     };
 }
