@@ -7,7 +7,7 @@ namespace AquaXP
     class InputLayoutBuilder
     {
     public:
-        InputLayoutBuilder();
+        AQUAXP_API InputLayoutBuilder();
 
         /// <summary>
         /// Adds a binormal to the input layout.

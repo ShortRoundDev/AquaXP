@@ -40,9 +40,6 @@
     <Filter Include="Header Files\API\Mesh">
       <UniqueIdentifier>{6d71dcea-8a68-4140-ae49-5bfc56abe1e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\API\Mesh">
-      <UniqueIdentifier>{c91689e7-1849-4029-9131-592a13c35c33}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\API\Texture">
       <UniqueIdentifier>{262a6264-cbfd-4bbe-8d62-c91838c5152b}</UniqueIdentifier>
     </Filter>
@@ -102,6 +99,9 @@
     <ClInclude Include="CBuffer.h">
       <Filter>Header Files\API\CBuffer</Filter>
     </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -131,11 +131,11 @@
     <ClCompile Include="PixelShader.cpp">
       <Filter>Source Files\API\Shaders</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\API\Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\API\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

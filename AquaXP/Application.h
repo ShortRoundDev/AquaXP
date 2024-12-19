@@ -20,7 +20,10 @@ namespace AquaXP
         );
         AQUAXP_API ~Application() = default;
 
-        AQUAXP_API void run(void(*draw)(Application*), void(*update)(Application*, f32));
+        AQUAXP_API void run(
+            std::function<void(Application*)> draw,
+            std::function<void(Application*, f32)> update
+        );
 
         /* Getters/Setters */
         AQUAXP_API std::wstring const& getTitle() const;

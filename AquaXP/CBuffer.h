@@ -3,12 +3,12 @@ namespace AquaXP
 {
     enum CbufferBindStage
     {
-        VS,
-        PS,
-        GS,
-        HS,
-        CS,
-        DS
+        VS = 1,
+        PS = 2,
+        GS = 4,
+        HS = 8,
+        CS = 16,
+        DS = 32
     };
 
     template<typename T>
@@ -28,11 +28,9 @@ namespace AquaXP
         bool bind(
             ID3D11DeviceContext* context,
             UINT slot = 0,
-            CbufferBindStage bindStage = static_cast<CbufferBindStage>(VS | PS)
+            CbufferBindStage bindStage = (CbufferBindStage)(VS | PS)
         ) const
         {
-            T copy = { 0 };
-
             D3D11_MAPPED_SUBRESOURCE bufferResource;
             HRESULT res = context->Map(
                 m_cBuffer.Get(),
@@ -48,7 +46,7 @@ namespace AquaXP
             }
 
             void* localBuffer = (void*)bufferResource.pData;
-            CopyMemory(localBuffer, &copy, sizeof(T));
+            CopyMemory(localBuffer, &m_cBufferData, sizeof(T));
             context->Unmap(m_cBuffer.Get(), 0);
             if (bindStage & VS)
             {

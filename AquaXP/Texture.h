@@ -26,11 +26,13 @@ namespace AquaXP
         AQUAXP_API ~Texture();
 
         AQUAXP_API void use(Graphics const* graphics, u32 slot = TEX_ALBEDO) const;
+        AQUAXP_API void use(ID3D11DeviceContext* device, u32 slot = TEX_ALBEDO) const;
 
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Resource> getResource() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Texture2D> getTexture2D() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> getShaderResourceView() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DepthStencilView> getDepthStencilView() const;
+        AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DepthStencilState> getDepthStencilState() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11RenderTargetView> getRenderTargetView() const;
 
         AQUAXP_API f32 getWidth() const;
@@ -39,8 +41,8 @@ namespace AquaXP
         AQUAXP_API D3D11_BIND_FLAG getFlags() const;
         AQUAXP_API bool getStatus() const;
 
-        AQUAXP_API void clear(Graphics const* graphics, f32 const clearColor[4] = CLEAR_COLOR);
-        AQUAXP_API void clearDepth(Graphics const* graphics);
+        AQUAXP_API void clear(Graphics const* graphics, f32 const clearColor[4] = CLEAR_COLOR) const;
+        AQUAXP_API void clearDepth(Graphics const* graphics) const;
 
     private:
         bool m_status;

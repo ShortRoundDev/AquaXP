@@ -73,7 +73,8 @@ Texture::Texture(
     m_height(),
     m_status(false)
 {
-    if (FAILED(CreateWICTextureFromFileEx(
+    HRESULT res;
+    if (FAILED(res = CreateWICTextureFromFileEx(
         device,
         context,
         path.c_str(),
@@ -86,6 +87,13 @@ Texture::Texture(
         m_resource.GetAddressOf(),
         m_shaderResourceView.GetAddressOf()
     )))
+    {
+        m_status = false;
+        return;
+    }
+
+    res = m_resource->QueryInterface(__uuidof(ID3D11Texture2D), (void**)m_texture2D.GetAddressOf());
+    if (FAILED(res))
     {
         m_status = false;
         return;
@@ -234,10 +242,10 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
 
     if (flags & D3D11_BIND_RENDER_TARGET)
     {
-        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = { };
+        ZeroMemory(&rtvDesc, sizeof(D3D11_RENDER_TARGET_VIEW_DESC));
         rtvDesc.Format = desc.Format;
-        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        rtvDesc.Texture2D.MipSlice = 0;
+        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
 
         if (FAILED(device->CreateRenderTargetView(m_texture2D.Get(), &rtvDesc, &m_renderTargetView)))
         {
@@ -247,25 +255,47 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
 
     if (flags & D3D11_BIND_DEPTH_STENCIL)
     {
-        D3D11_TEXTURE2D_DESC depthStencilDesc = {};
-        depthStencilDesc.Width = desc.Width;
-        depthStencilDesc.Height = desc.Height;
-        depthStencilDesc.MipLevels = 1;
-        depthStencilDesc.ArraySize = 1;
-        depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        depthStencilDesc.SampleDesc.Count = 1;
-        depthStencilDesc.SampleDesc.Quality = 0;
-        depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-        depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        D3D11_TEXTURE2D_DESC depthStencilTextureDesc = {};
+        depthStencilTextureDesc.Width = desc.Width;
+        depthStencilTextureDesc.Height = desc.Height;
+        depthStencilTextureDesc.MipLevels = 1;
+        depthStencilTextureDesc.ArraySize = 1;
+        depthStencilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthStencilTextureDesc.SampleDesc.Count = 2;
+        depthStencilTextureDesc.SampleDesc.Quality = 0;
+        depthStencilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+        depthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-        if (FAILED(device->CreateTexture2D(&depthStencilDesc, nullptr, &m_depthStencilTexture)))
+        if (FAILED(device->CreateTexture2D(&depthStencilTextureDesc, nullptr, &m_depthStencilTexture)))
+        {
+            return false;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthStencilDesc = { };
+        ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+        depthStencilDesc.DepthEnable = true;
+        depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+        depthStencilDesc.StencilEnable = true;
+        depthStencilDesc.StencilReadMask = 0xff;
+        depthStencilDesc.StencilWriteMask = 0xff;
+        depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+        depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+        depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+        depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+        depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+        depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+        if (FAILED(device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf())))
         {
             return false;
         }
 
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-        dsvDesc.Format = depthStencilDesc.Format;
-        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Format = depthStencilTextureDesc.Format;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         dsvDesc.Texture2D.MipSlice = 0;
 
         if (FAILED(device->CreateDepthStencilView(m_depthStencilTexture.Get(), &dsvDesc, &m_depthStencilView)))
@@ -293,15 +323,18 @@ Texture::Texture(Graphics* graphics, f32 width, f32 height, D3D11_BIND_FLAG flag
 Texture::Texture(Graphics* graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
     Texture(graphics->getDevice().Get(), raw, flags) { }
 
-
 Texture::~Texture() = default;
 
-void Texture::use(Graphics const* graphics, u32 slot) const
+void Texture::use(ID3D11DeviceContext* context, u32 slot) const
 {
     if (m_shaderResourceView)
     {
-        graphics->getContext()->PSSetShaderResources(slot, 1, m_shaderResourceView.GetAddressOf());
+        context->PSSetShaderResources(slot, 1, m_shaderResourceView.GetAddressOf());
     }
+}
+void Texture::use(Graphics const* graphics, u32 slot) const
+{
+    use(graphics->getContext().Get(), slot);
 }
 
 Microsoft::WRL::ComPtr<ID3D11Resource> Texture::getResource() const
@@ -322,6 +355,11 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Texture::getShaderResourceView(
 Microsoft::WRL::ComPtr<ID3D11DepthStencilView> Texture::getDepthStencilView() const
 {
     return m_depthStencilView;
+}
+
+Microsoft::WRL::ComPtr<ID3D11DepthStencilState> Texture::getDepthStencilState() const
+{
+    return m_depthStencilState;
 }
 
 Microsoft::WRL::ComPtr<ID3D11RenderTargetView> Texture::getRenderTargetView() const
@@ -349,7 +387,7 @@ bool Texture::getStatus() const
     return m_status;
 }
 
-void Texture::clear(Graphics const* graphics, f32 const clearColor[4])
+void Texture::clear(Graphics const* graphics, f32 const clearColor[4]) const
 {
     if (m_renderTargetView)
     {
@@ -359,7 +397,7 @@ void Texture::clear(Graphics const* graphics, f32 const clearColor[4])
     }
 }
 
-void Texture::clearDepth(Graphics const* graphics)
+void Texture::clearDepth(Graphics const* graphics) const
 {
     if (m_depthStencilView)
     {

@@ -17,6 +17,7 @@
 #include <string>
 #include <memory>
 #include <stack>
+#include <functional>
 
 //DirectX
 #include "d3d11.h"

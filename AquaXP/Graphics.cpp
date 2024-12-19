@@ -15,11 +15,14 @@ Graphics::Graphics(
 ) : m_context(),
     m_device(),
     m_swapChain(),
-    m_backBuffer()
+    m_backBuffer(),
+    m_width(width),
+    m_height(height)
 {
     initInfrastructure(width, height);
     initSwapchain(hwnd, fullscreen);
     initRenderTarget(width, height);
+    initRasterizer();
 }
 
 
@@ -42,14 +45,13 @@ bool Graphics::initWaterfall(
 
 bool Graphics::initInfrastructure(u16 width, u16 height)
 {
-    Microsoft::WRL::ComPtr<IDXGIFactory> factory = nullptr;
-    if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)factory.GetAddressOf())))
+    if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)m_factory.GetAddressOf())))
     {
         return false;
     }
 
     IDXGIAdapter* adapter = nullptr;
-    if (FAILED(factory->EnumAdapters(0, &adapter)))
+    if (FAILED(m_factory->EnumAdapters(0, &adapter)))
     {
         return false;
     }
@@ -85,32 +87,51 @@ bool Graphics::initInfrastructure(u16 width, u16 height)
     return true;
 }
 
-    bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
+bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
 {
-    DXGI_SWAP_CHAIN_DESC swapchainDesc = { 0 };
-    swapchainDesc.BufferCount = 1;
-    swapchainDesc.BufferDesc = m_displayMode;
-    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapchainDesc.OutputWindow = hwnd;
-    swapchainDesc.SampleDesc.Count = 1;
-    swapchainDesc.Windowed = !fullscreen;
-    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
     D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
-    if (FAILED(D3D11CreateDeviceAndSwapChain(
-        nullptr,
+    if (FAILED(D3D11CreateDevice(
+        NULL,
         D3D_DRIVER_TYPE_HARDWARE,
-        nullptr,
-        0, // TODO: Replace this with a configurable flag
+        NULL,
+        (BYTE)D3D11_CREATE_DEVICE_DEBUG,
         &featureLevel,
         1,
         D3D11_SDK_VERSION,
-        &swapchainDesc,
-        m_swapChain.GetAddressOf(),
         m_device.GetAddressOf(),
-        nullptr,
+        NULL,
         m_context.GetAddressOf()
     )))
+    {
+        return false;
+    }
+
+    DXGI_SWAP_CHAIN_DESC swapchainDesc = { 0 };
+    swapchainDesc.BufferCount = 1;
+    swapchainDesc.BufferDesc.Width = static_cast<u32>(m_width);
+    swapchainDesc.BufferDesc.Height = static_cast<u32>(m_height);
+    swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapchainDesc.BufferDesc.RefreshRate.Numerator = 0; // or 0 if !vsync
+    swapchainDesc.BufferDesc.RefreshRate.Denominator = 1; // or 1 if !vsync
+    swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    swapchainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchainDesc.OutputWindow = hwnd;
+    swapchainDesc.SampleDesc.Count = 2;
+    swapchainDesc.SampleDesc.Quality = 0;
+    swapchainDesc.Windowed = !fullscreen;
+    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    swapchainDesc.Flags = 0;
+
+    HRESULT res;
+    if (FAILED(
+        res = m_factory->CreateSwapChain(
+            m_device.Get(),
+            &swapchainDesc,
+            m_swapChain.GetAddressOf()
+        )
+    ))
     {
         return false;
     }
@@ -135,8 +156,35 @@ bool Graphics::initRenderTarget(u16 width, u16 height)
     m_backBuffer = std::make_unique<Texture>(
         m_device.Get(),
         backBuffer,
-        static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET)
+        static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET | D3D11_BIND_DEPTH_STENCIL)
     );
+
+    setRenderTarget(m_backBuffer.get());
+    
+    return true;
+}
+
+bool Graphics::initRasterizer()
+{
+    D3D11_RASTERIZER_DESC rasterDesc = { };
+    ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
+    rasterDesc.AntialiasedLineEnable = true;
+    rasterDesc.CullMode = D3D11_CULL_NONE;
+    rasterDesc.DepthBias = 0;
+    rasterDesc.DepthBiasClamp = 0.0f;
+    rasterDesc.DepthClipEnable = true;
+    rasterDesc.FillMode = D3D11_FILL_SOLID;
+    rasterDesc.MultisampleEnable = true;
+    rasterDesc.ScissorEnable = false;
+    rasterDesc.SlopeScaledDepthBias = 0.0f;
+    rasterDesc.FrontCounterClockwise = false;
+
+    if (FAILED(m_device->CreateRasterizerState(&rasterDesc, m_rasterizer.GetAddressOf())))
+    {
+        return false;
+    }
+
+    m_context->RSSetState(m_rasterizer.Get());
     return true;
 }
 
@@ -162,16 +210,27 @@ void Graphics::setRenderTarget(RenderTarget const& renderTarget)
         s_renderTargetViews,
         nullptr
     );
+
+    D3D11_VIEWPORT viewport = {
+        .Width = renderTarget.renderTargets[0].getWidth(),
+        .Height = renderTarget.renderTargets[0].getHeight(),
+        .MinDepth = 0.0f,
+        .MaxDepth = 1.0f
+    };
+
+    m_context->RSSetViewports(1, &viewport);
 }
 
 void Graphics::setDepthBuffer(Texture const* texture)
 {
     m_depthBuffer = texture;
+    m_context->OMSetDepthStencilState(texture->getDepthStencilState().Get(), 1);
     m_context->OMSetRenderTargets(
-        0,
-        nullptr,
+        1,
+        texture->getRenderTargetView().GetAddressOf(),
         texture->getDepthStencilView().Get()
     );
+
 }
 
 Microsoft::WRL::ComPtr<ID3D11Device> Graphics::getDevice() const
@@ -211,4 +270,9 @@ Texture const* Graphics::getDepthBuffer() const
 RenderTarget const& Graphics::getRenderTarget() const
 {
     return m_renderTarget;
+}
+
+void Graphics::present() const
+{
+    m_swapChain->Present(1, 0);
 }

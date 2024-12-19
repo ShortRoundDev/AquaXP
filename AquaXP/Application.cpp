@@ -73,6 +73,12 @@ bool Application::initWindow()
         return false;
     }
 
+    HRESULT result = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    if (FAILED(result))
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -83,7 +89,10 @@ bool Application::initDirectX()
     return true;
 }
 
-void Application::run(void(*draw)(Application*), void(*update)(Application*, f32))
+void Application::run(
+    std::function<void(Application*)> draw,
+    std::function<void(Application*, f32)> update
+)
 {
     ShowWindow(m_hwnd, SW_SHOW);
     UpdateWindow(m_hwnd);
