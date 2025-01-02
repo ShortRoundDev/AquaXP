@@ -12,7 +12,6 @@ Texture::Texture(
     std::string const& path,
     D3D11_BIND_FLAG flags
 ) :
-    m_resource(),
     m_texture2D(),
     m_depthStencilTexture(),
     m_shaderResourceView(),
@@ -28,7 +27,7 @@ Texture::Texture(
     {
         m_status = false;
     }
-
+    Microsoft::WRL::ComPtr<ID3D11Resource> buffer;
     if (FAILED(CreateWICTextureFromFileEx(
         device,
         context,
@@ -39,13 +38,14 @@ Texture::Texture(
         0,
         D3D11_RESOURCE_MISC_GENERATE_MIPS,
         DirectX::WIC_LOADER_FLAGS::WIC_LOADER_DEFAULT,
-        m_resource.GetAddressOf(),
+        buffer.GetAddressOf(),
         m_shaderResourceView.GetAddressOf()
     )))
     {
         m_status = false;
         return;
     };
+    buffer.As(&m_texture2D);
 
     D3D11_TEXTURE2D_DESC desc;
     m_texture2D->GetDesc(&desc);
@@ -62,7 +62,6 @@ Texture::Texture(
     std::wstring const& path,
     D3D11_BIND_FLAG flags
 ) :
-    m_resource(),
     m_texture2D(),
     m_depthStencilTexture(),
     m_shaderResourceView(),
@@ -73,8 +72,8 @@ Texture::Texture(
     m_height(),
     m_status(false)
 {
-    HRESULT res;
-    if (FAILED(res = CreateWICTextureFromFileEx(
+    Microsoft::WRL::ComPtr<ID3D11Resource> buffer;
+    HRESULT res = CreateWICTextureFromFileEx(
         device,
         context,
         path.c_str(),
@@ -84,15 +83,17 @@ Texture::Texture(
         0,
         D3D11_RESOURCE_MISC_GENERATE_MIPS,
         DirectX::WIC_LOADER_FLAGS::WIC_LOADER_DEFAULT,
-        m_resource.GetAddressOf(),
+        buffer.GetAddressOf(),
         m_shaderResourceView.GetAddressOf()
-    )))
+    );
+    if (FAILED(res ))
     {
         m_status = false;
         return;
     }
+    buffer.As(&m_texture2D);
 
-    res = m_resource->QueryInterface(__uuidof(ID3D11Texture2D), (void**)m_texture2D.GetAddressOf());
+    res = m_texture2D->QueryInterface(__uuidof(ID3D11Texture2D), (void**)m_texture2D.GetAddressOf());
     if (FAILED(res))
     {
         m_status = false;
@@ -115,7 +116,6 @@ Texture::Texture(
     sz size,
     D3D11_BIND_FLAG flags
 ) :
-    m_resource(),
     m_texture2D(),
     m_depthStencilTexture(),
     m_shaderResourceView(),
@@ -126,6 +126,7 @@ Texture::Texture(
     m_height(),
     m_status(false)
 {
+    Microsoft::WRL::ComPtr<ID3D11Resource> buffer;
     if (FAILED(CreateWICTextureFromMemoryEx(
         device,
         context,
@@ -137,13 +138,14 @@ Texture::Texture(
         0,
         0,
         DirectX::WIC_LOADER_FLAGS::WIC_LOADER_DEFAULT,
-        m_resource.GetAddressOf(),
+        buffer.GetAddressOf(),
         m_shaderResourceView.GetAddressOf()
     )))
     {
         m_status = false;
         return;
     }
+    buffer.As(&m_texture2D);
 
     D3D11_TEXTURE2D_DESC desc;
     m_texture2D->GetDesc(&desc);
@@ -157,9 +159,9 @@ Texture::Texture(
     ID3D11Device* device,
     f32 width,
     f32 height,
+    DXGI_SAMPLE_DESC const& sampleDesc,
     D3D11_BIND_FLAG flags
 ) :
-    m_resource(),
     m_texture2D(),
     m_depthStencilTexture(),
     m_shaderResourceView(),
@@ -175,9 +177,8 @@ Texture::Texture(
     desc.Height = static_cast<u32>(height);
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    desc.SampleDesc.Count = 1;
-    desc.SampleDesc.Quality = 0;
+    desc.Format = (flags & D3D11_BIND_DEPTH_STENCIL) ? DXGI_FORMAT_D24_UNORM_S8_UINT : DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.SampleDesc = sampleDesc;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = flags;
     desc.CPUAccessFlags = 0;
@@ -206,7 +207,6 @@ Texture::Texture(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> raw,
     D3D11_BIND_FLAG flags
 ) :
-    m_resource(raw),
     m_texture2D(raw),
     m_depthStencilTexture(),
     m_shaderResourceView(),
@@ -261,8 +261,7 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
         depthStencilTextureDesc.MipLevels = 1;
         depthStencilTextureDesc.ArraySize = 1;
         depthStencilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        depthStencilTextureDesc.SampleDesc.Count = 2;
-        depthStencilTextureDesc.SampleDesc.Quality = 0;
+        depthStencilTextureDesc.SampleDesc = desc.SampleDesc;
         depthStencilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
         depthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
@@ -311,14 +310,23 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
 Texture::Texture(Graphics* graphics, std::string const& path, D3D11_BIND_FLAG flags) :
     Texture(graphics->getDevice().Get(), graphics->getContext().Get(), path, flags) { }
 
+Texture::Texture(Graphics* graphics, char const* path, D3D11_BIND_FLAG flags) :
+    Texture(graphics, string(path), flags) { }
+
 Texture::Texture(Graphics* graphics, std::wstring const& path, D3D11_BIND_FLAG flags) :
     Texture(graphics->getDevice().Get(), graphics->getContext().Get(), path, flags) { }
+
+Texture::Texture(Graphics* graphics, wchar_t const* path, D3D11_BIND_FLAG flags) :
+    Texture(graphics, wstring(path), flags) { }
+
+Texture::Texture(Graphics* graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags) :
+    Texture(graphics->getDevice().Get(), width, height, sampleDesc, flags) { }
 
 Texture::Texture(Graphics* graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags) :
     Texture(graphics->getDevice().Get(), graphics->getContext().Get(), data, size, flags) { }
 
 Texture::Texture(Graphics* graphics, f32 width, f32 height, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), width, height, flags) { }
+    Texture(graphics->getDevice().Get(), width, height, graphics->getMultiSamplingDesc(), flags) { }
 
 Texture::Texture(Graphics* graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
     Texture(graphics->getDevice().Get(), raw, flags) { }
@@ -335,11 +343,6 @@ void Texture::use(ID3D11DeviceContext* context, u32 slot) const
 void Texture::use(Graphics const* graphics, u32 slot) const
 {
     use(graphics->getContext().Get(), slot);
-}
-
-Microsoft::WRL::ComPtr<ID3D11Resource> Texture::getResource() const
-{
-    return m_resource;
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture::getTexture2D() const

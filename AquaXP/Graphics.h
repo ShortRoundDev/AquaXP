@@ -7,6 +7,7 @@ namespace AquaXP
     {
         Texture const* renderTargets;
         sz numRenderTargets;
+        Texture const* depthBuffer;
     };
 
     class Application;
@@ -24,14 +25,17 @@ namespace AquaXP
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Device> getDevice() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DeviceContext> getContext() const;
         AQUAXP_API Microsoft::WRL::ComPtr<IDXGISwapChain> getSwapChain() const;
+        AQUAXP_API DXGI_SAMPLE_DESC const& getMultiSamplingDesc() const;
         AQUAXP_API Texture const* getBackBuffer() const;
 
+        AQUAXP_API void resetRenderTarget();
         AQUAXP_API void setRenderTarget(RenderTarget const& renderTarget);
-        AQUAXP_API void setRenderTarget(Texture const* renderTarget);
+        AQUAXP_API void setRenderTarget(Texture const* renderTarget, Texture const* depthBuffer);
         AQUAXP_API RenderTarget const& getRenderTarget() const;
 
         AQUAXP_API void setDepthBuffer(Texture const* depthBuffer);
         AQUAXP_API Texture const* getDepthBuffer() const;
+        AQUAXP_API Texture const* getRootDepthBuffer() const;
 
         AQUAXP_API void present() const;
 
@@ -41,6 +45,8 @@ namespace AquaXP
         Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
         Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizer;
         Microsoft::WRL::ComPtr<IDXGIFactory> m_factory;
+
+        DXGI_SAMPLE_DESC m_sampleDesc;
 
         UINT m_msaaQualityLevels;
 
@@ -52,7 +58,7 @@ namespace AquaXP
         std::unique_ptr<Texture const> m_backBuffer;
         RenderTarget m_renderTarget;
         Texture const* m_depthBuffer;
-
+        std::unique_ptr<Texture const> m_rootDepthBuffer;
 
         using Initializer = bool(Graphics::*)(Application* application);
         bool initWaterfall(
@@ -63,6 +69,7 @@ namespace AquaXP
         bool initInfrastructure(u16 width, u16 height);
         bool initSwapchain(HWND hwnd, bool fullscreen);
         bool initRenderTarget(u16 width, u16 height);
+        bool initDepthStencilBuffer(u16 width, u16 height);
         bool initRasterizer();
 
     };

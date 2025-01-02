@@ -49,6 +49,24 @@
     <Filter Include="Header Files\API\CBuffer">
       <UniqueIdentifier>{4fdd70a1-9616-49d1-819d-fd1d82fc0afe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Tools">
+      <UniqueIdentifier>{108e0607-4892-4795-bfd5-d3bc7fb85a06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{2b2ae0f2-1387-469a-9a07-a39ef4278b02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tools\Camera">
+      <UniqueIdentifier>{8e7a9699-fda4-45f1-a1c0-971455a163ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Camera">
+      <UniqueIdentifier>{1fd26a1c-523d-4abf-a966-c1671cb39323}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools\Models">
+      <UniqueIdentifier>{b35565b6-e3cc-484e-a276-3a0ce2737b5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tools\Models">
+      <UniqueIdentifier>{66c92954-31a5-4ca4-9752-df1fbf570ec5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -102,6 +120,15 @@
     <ClInclude Include="Sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MathHelpers.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ICamera.h">
+      <Filter>Header Files\Tools\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="PerspectiveCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -135,6 +162,15 @@
       <Filter>Source Files\API\Texture</Filter>
     </ClCompile>
     <ClCompile Include="Sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MathHelpers.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ICamera.cpp">
+      <Filter>Source Files\Tools\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="PerspectiveCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
