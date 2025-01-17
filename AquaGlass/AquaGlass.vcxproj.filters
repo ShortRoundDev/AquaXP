@@ -35,6 +35,9 @@
     <None Include="Model.hlsli">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="vcpkg.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AquaGlass.cpp">
