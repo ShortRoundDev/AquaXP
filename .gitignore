@@ -363,4 +363,3 @@ MigrationBackup/
 FodyWeavers.xsd
 
 **/vcpkg_installed/**
-/AquaXP/Graphics.cpp
