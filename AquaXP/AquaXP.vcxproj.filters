@@ -129,6 +129,9 @@
     <ClInclude Include="PerspectiveCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Concepts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -151,9 +154,6 @@
     </ClCompile>
     <ClCompile Include="VertexShader.cpp">
       <Filter>Source Files\API\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="FileHelpers.cpp">
-      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="PixelShader.cpp">
       <Filter>Source Files\API\Shaders</Filter>

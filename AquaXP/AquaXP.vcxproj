@@ -111,7 +111,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;AQUAXP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;AQUAXP_EXPORTS;_WINDOWS;_USRDLL;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -131,7 +131,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;AQUAXP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;AQUAXP_EXPORTS;_WINDOWS;_USRDLL;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -150,11 +150,11 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="AquaXP.h" />
     <ClInclude Include="CBuffer.h" />
+    <ClInclude Include="Concepts.h" />
     <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="ICamera.h" />
-    <ClInclude Include="IModelLoader.h" />
     <ClInclude Include="InputLayoutBuilder.h" />
     <ClInclude Include="MathHelpers.h" />
     <ClInclude Include="Mesh.h" />
@@ -172,10 +172,8 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="FileHelpers.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ICamera.cpp" />
-    <ClCompile Include="IModelLoader.cpp" />
     <ClCompile Include="InputLayoutBuilder.cpp" />
     <ClCompile Include="MathHelpers.cpp" />
     <ClCompile Include="pch.cpp">

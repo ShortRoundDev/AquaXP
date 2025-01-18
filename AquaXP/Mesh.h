@@ -20,17 +20,22 @@ namespace AquaXP
             uploadVertexData(device, vertices, vertexCount, indices, indexCount);
         }
 
+        template<typename VertexContainer, typename IndexContainer>
+            requires
+                std::ranges::contiguous_range<VertexContainer> && std::ranges::contiguous_range<IndexContainer> &&
+                std::same_as<std::ranges::range_value_t<VertexContainer>, T> &&
+                std::same_as<std::ranges::range_value_t<IndexContainer>, UINT>
         Mesh(
             ID3D11Device* device,
-            std::vector<T> const& vertices,
-            std::vector<UINT> const& indices
+            VertexContainer const& vertices,
+            IndexContainer const& indices
         ) :
             Mesh(
                 device,
-                vertices.data(),
-                static_cast<UINT>(vertices.size()),
-                indices.data(),
-                static_cast<UINT>(indices.size())
+                std::ranges::data(vertices),
+                static_cast<UINT>(std::distance(vertices.begin(), vertices.end())),
+                std::ranges::data(indices),
+                static_cast<UINT>(std::distance(indices.begin(), indices.end()))
             ) { }
 
         Mesh(
@@ -38,17 +43,25 @@ namespace AquaXP
             std::initializer_list<T> const& vertices,
             std::initializer_list<UINT> const& indices
         ) :
-            Mesh(
-                device,
-                std::vector<T>(vertices.begin(), vertices.end()),
-                std::vector<UINT>(indices.begin(), indices.end())
-            ) { }
+        Mesh(
+            device,
+            std::ranges::data(vertices),
+            static_cast<UINT>(std::distance(vertices.begin(), vertices.end())),
+            std::ranges::data(indices),
+            static_cast<UINT>(std::distance(indices.begin(), indices.end()))
+        ) { }
 
+
+        template<typename VertexContainer, typename IndexContainer>
+            requires
+                std::ranges::contiguous_range<VertexContainer>&& std::ranges::contiguous_range<IndexContainer>&&
+                std::same_as<std::ranges::range_value_t<VertexContainer>, T>&&
+                std::same_as<std::ranges::range_value_t<IndexContainer>, UINT>
         Mesh(
             ID3D11Device* device,
             std::pair<
-                std::vector<T>,
-                std::vector<UINT>
+                VertexContainer,
+                IndexContainer
             > const& data
         ) : Mesh<T>::Mesh(
                 device,

@@ -17,6 +17,7 @@
 #include <string>
 #include <memory>
 #include <stack>
+#include <array>
 #include <functional>
 
 //DirectX

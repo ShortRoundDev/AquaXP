@@ -165,7 +165,7 @@ bool Graphics::initRenderTarget(u16 width, u16 height)
         backBuffer,
         static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET | D3D11_BIND_DEPTH_STENCIL)
     );
-    
+
     return true;
 }
 
@@ -288,7 +288,7 @@ void Graphics::setRenderTarget(Texture const* renderTarget, Texture const* depth
 {
     RenderTarget rt = {
         renderTarget,
-        renderTarget == nullptr ? 0 : 1,
+        static_cast<sz>(renderTarget == nullptr ? 0 : 1),
         depthBuffer
     };
     setRenderTarget(rt);
