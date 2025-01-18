@@ -52,7 +52,7 @@ namespace AquaXP
 
     private:
         /* Settings */
-        
+
         /* Window info */
         wstring m_title;
         bool m_vSync;
@@ -70,6 +70,7 @@ namespace AquaXP
         u16 m_height;
 
         /* DirectX */
+#pragma message("TODO: Figure out how to initialize this in the correct order without a unique_ptr, just static allocation. Maybe move HWND and stuff into its own struct so those can be initialized by initWindow before initDirectX more simply")
         std::unique_ptr<Graphics> m_graphics;
 
         bool initWindow();

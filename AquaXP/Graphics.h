@@ -55,9 +55,11 @@ namespace AquaXP
 
         DXGI_MODE_DESC m_displayMode;
 
+#pragma message("TODO: Figure out how to allow the user to allocate this. Or just put in static memory?")
         std::unique_ptr<Texture const> m_backBuffer;
         RenderTarget m_renderTarget;
         Texture const* m_depthBuffer;
+#pragma message("TODO: Figure out how to allow the user to allocate this. Or just put in static memory?")
         std::unique_ptr<Texture const> m_rootDepthBuffer;
 
         using Initializer = bool(Graphics::*)(Application* application);

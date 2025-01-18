@@ -28,6 +28,7 @@ Texture::Texture(
         m_status = false;
     }
     Microsoft::WRL::ComPtr<ID3D11Resource> buffer;
+#pragma message("TODO: Figure out how to allow the user to allocate this. turn it into a CreateFromMemory and pass the data in? Would help with IOCP")
     if (FAILED(CreateWICTextureFromFileEx(
         device,
         context,
@@ -73,6 +74,7 @@ Texture::Texture(
     m_status(false)
 {
     Microsoft::WRL::ComPtr<ID3D11Resource> buffer;
+#pragma message("TODO: Figure out how to allow the user to allocate this. turn it into a CreateFromMemory and pass the data in? Would help with IOCP")
     HRESULT res = CreateWICTextureFromFileEx(
         device,
         context,
@@ -127,6 +129,7 @@ Texture::Texture(
     m_status(false)
 {
     Microsoft::WRL::ComPtr<ID3D11Resource> buffer;
+#pragma message("TODO: Figure out how to allow the user to allocate this. turn it into a CreateFromMemory and pass the data in? Would help with IOCP")
     if (FAILED(CreateWICTextureFromMemoryEx(
         device,
         context,

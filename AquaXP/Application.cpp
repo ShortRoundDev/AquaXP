@@ -26,8 +26,6 @@ Application::Application(
     initDirectX();
 }
 
-
-
 bool Application::initWindow()
 {
     m_instance = GetModuleHandle(nullptr);
@@ -84,7 +82,6 @@ bool Application::initWindow()
 
 bool Application::initDirectX()
 {
-
     m_graphics = std::make_unique<Graphics>(m_width, m_height, m_hwnd, m_fullscreen);
     return true;
 }
