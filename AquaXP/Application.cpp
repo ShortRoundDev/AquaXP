@@ -4,35 +4,27 @@
 using namespace AquaXP;
 using namespace std;
 
-Application::Application(
+Window initWindow(
     u16 width,
     u16 height,
-    std::wstring const& title,
-    bool vSync,
     bool fullscreen,
+    WCHAR const* title,
     bool enableTitlebar,
-    bool fixedTimestep
-) :
-    m_width(width),
-    m_height(height),
-    m_title(title),
-    m_vSync(vSync),
-    m_fullscreen(fullscreen),
-    m_enableTitlebar(enableTitlebar),
-    m_fixedTimestep(fixedTimestep),
-    m_graphics(nullptr)
+    bool vSync
+)
 {
-    initWindow();
-    initDirectX();
-}
+    Window window;
+    window.m_status = false;
+    window.m_enableTitlebar = enableTitlebar;
+    window.m_vSync = vSync;
+    window.m_fullscreen = fullscreen;
+    window.m_title = title;
+    window.m_instance = GetModuleHandle(nullptr);
 
-bool Application::initWindow()
-{
-    m_instance = GetModuleHandle(nullptr);
     WNDCLASSEX wc = { 0 };
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = WndProc;
-    wc.hInstance = m_instance;
+    wc.hInstance = window.m_instance;
     wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
     wc.hIconSm = wc.hIcon;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -42,48 +34,63 @@ bool Application::initWindow()
 
     if (!RegisterClassEx(&wc))
     {
-        return false;
+        return window;
     }
 
-    if (m_fullscreen)
+    if (fullscreen)
     {
-        m_width = GetSystemMetrics(SM_CXSCREEN);
-        m_height = GetSystemMetrics(SM_CYSCREEN);
+        window.m_width = GetSystemMetrics(SM_CXSCREEN);
+        window.m_height = GetSystemMetrics(SM_CYSCREEN);
+    }
+    else
+    {
+        window.m_width = width;
+        window.m_height = height;
     }
 
-    m_hwnd = CreateWindowExW(
+    window.m_hwnd = CreateWindowExW(
         WS_EX_APPWINDOW,
         wc.lpszClassName,
-        m_title.c_str(),
+        title,
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        m_width,
-        m_height,
+        window.m_width,
+        window.m_height,
         nullptr,
         nullptr,
-        m_instance,
+        window.m_instance,
         nullptr
     );
 
-    if (!m_hwnd)
+    if (!window.m_hwnd)
     {
-        return false;
+        return window;
     }
 
     HRESULT result = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(result))
     {
-        return false;
+        return window;
     }
 
-    return true;
+    window.m_status = true;
+    return window;
 }
 
-bool Application::initDirectX()
+Application::Application(
+    u16 width,
+    u16 height,
+    WCHAR const* title,
+    bool vSync,
+    bool fullscreen,
+    bool enableTitlebar,
+    bool fixedTimestep
+) :
+    m_window(initWindow(width, height, fullscreen, title, enableTitlebar, vSync)),
+    m_fixedTimestep(fixedTimestep),
+    m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen)
 {
-    m_graphics = std::make_unique<Graphics>(m_width, m_height, m_hwnd, m_fullscreen);
-    return true;
 }
 
 void Application::run(
@@ -91,8 +98,8 @@ void Application::run(
     std::function<void(Application*, f32)> update
 )
 {
-    ShowWindow(m_hwnd, SW_SHOW);
-    UpdateWindow(m_hwnd);
+    ShowWindow(m_window.m_hwnd, SW_SHOW);
+    UpdateWindow(m_window.m_hwnd);
 
     MSG msg = { 0 };
     f32 deltaTime = 0.0f;
@@ -117,14 +124,14 @@ void Application::run(
 u16 Application::getClientWidth() const
 {
     RECT clientRect;
-    GetClientRect(m_hwnd, &clientRect);
+    GetClientRect(m_window.m_hwnd, &clientRect);
     return static_cast<u16>(clientRect.right - clientRect.left);
 }
 
 u16 Application::getClientHeight() const
 {
     RECT clientRect;
-    GetClientRect(m_hwnd, &clientRect);
+    GetClientRect(m_window.m_hwnd, &clientRect);
     return static_cast<u16>(clientRect.bottom - clientRect.top);
 }
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
@@ -141,39 +148,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
     return 0;
 }
 
-std::wstring const& Application::getTitle() const
+WCHAR const* Application::getTitle() const
 {
-    return m_title;
+    return m_window.m_title;
 }
 
-void Application::setTitle(std::wstring const& title)
+void Application::setTitle(WCHAR const* title)
 {
-    m_title = title;
+    m_window.m_title = title;
 }
 
 bool Application::isVsync() const
 {
-    return m_vSync;
+    return m_window.m_vSync;
 }
 
 void Application::setVsync(bool vSync)
 {
-    m_vSync = vSync;
+    m_window.m_vSync = vSync;
 }
 
 bool Application::isFullscreen() const
 {
-    return m_fullscreen;
+    return m_window.m_fullscreen;
 }
 
 void Application::setFullscreen(bool fullscreen)
 {
-    m_fullscreen = fullscreen;
+    m_window.m_fullscreen = fullscreen;
 }
 
 bool Application::isTitlebarEnabled() const
 {
-    return m_enableTitlebar;
+    return m_window.m_enableTitlebar;
 }
 
 bool Application::isFixedTimestep() const
@@ -183,25 +190,25 @@ bool Application::isFixedTimestep() const
 
 HWND Application::getHWND() const
 {
-    return m_hwnd;
+    return m_window.m_hwnd;
 }
 
 HINSTANCE Application::getInstance() const
 {
-    return m_instance;
+    return m_window.m_instance;
 }
 
 u16 Application::getWindowWidth() const
 {
-    return m_width;
+    return m_window.m_width;
 }
 
 u16 Application::getWindowHeight() const
 {
-    return m_height;
+    return m_window.m_height;
 }
 
-Graphics* Application::getGraphics() const
+Graphics& Application::getGraphics()
 {
-    return m_graphics.get();
+    return m_graphics;
 }

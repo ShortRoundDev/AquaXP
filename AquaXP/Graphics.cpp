@@ -161,7 +161,7 @@ bool Graphics::initRenderTarget(u16 width, u16 height)
     }
 
     m_backBuffer = std::make_unique<Texture>(
-        this,
+        *this,
         backBuffer,
         static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET | D3D11_BIND_DEPTH_STENCIL)
     );
@@ -172,7 +172,7 @@ bool Graphics::initRenderTarget(u16 width, u16 height)
 bool Graphics::initDepthStencilBuffer(u16 width, u16 height)
 {
     m_rootDepthBuffer = make_unique<Texture>(
-        this,
+        *this,
         static_cast<f32>(width), static_cast<f32>(height),
         D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL
     );
@@ -186,8 +186,8 @@ bool Graphics::initRasterizer()
 {
     D3D11_RASTERIZER_DESC rasterDesc = { };
     ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
-    rasterDesc.AntialiasedLineEnable = TRUE;
-    rasterDesc.CullMode = D3D11_CULL_NONE;
+    rasterDesc.AntialiasedLineEnable = FALSE;
+    rasterDesc.CullMode = D3D11_CULL_BACK;
     rasterDesc.DepthBias = 0;
     rasterDesc.DepthBiasClamp = 0.0f;
     rasterDesc.DepthClipEnable = true;

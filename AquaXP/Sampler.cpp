@@ -63,7 +63,7 @@ Sampler::Sampler(
     samplerDesc.AddressW = w;
 
     samplerDesc.MipLODBias = 0.0f;
-    samplerDesc.MaxAnisotropy = 1;
+    samplerDesc.MaxAnisotropy = 16;
     samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
     samplerDesc.BorderColor[0] = border.x;
     samplerDesc.BorderColor[1] = border.y;
@@ -71,6 +71,7 @@ Sampler::Sampler(
     samplerDesc.BorderColor[3] = border.w;
     samplerDesc.MinLOD = 0;
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    samplerDesc.MipLODBias = 0.0f;
 
     auto result = device->CreateSamplerState(
         &samplerDesc,

@@ -6,13 +6,26 @@
 
 namespace AquaXP
 {
+    struct Window
+    {
+        bool m_status;
+        HINSTANCE m_instance;
+        bool m_fullscreen;
+        u16 m_width;
+        u16 m_height;
+        HWND m_hwnd;
+        WCHAR const* m_title;
+        bool m_vSync;
+        bool m_enableTitlebar;
+    };
+
     class Application
     {
     public:
         AQUAXP_API Application(
             u16 width,
             u16 height,
-            std::wstring const& title,
+            WCHAR const* title,
             bool vSync = false,
             bool fullscreen = false,
             bool enableTitlebar = true,
@@ -26,8 +39,8 @@ namespace AquaXP
         );
 
         /* Getters/Setters */
-        AQUAXP_API std::wstring const& getTitle() const;
-        AQUAXP_API void setTitle(std::wstring const& title);
+        AQUAXP_API WCHAR const* getTitle() const;
+        AQUAXP_API void setTitle(WCHAR const* title);
 
         AQUAXP_API bool isVsync() const;
         AQUAXP_API void setVsync(bool vSync);
@@ -48,33 +61,20 @@ namespace AquaXP
         AQUAXP_API u16 getClientWidth() const;
         AQUAXP_API u16 getClientHeight() const;
 
-        AQUAXP_API Graphics* getGraphics() const;
+        AQUAXP_API Graphics& getGraphics();
 
     private:
         /* Settings */
 
-        /* Window info */
-        wstring m_title;
-        bool m_vSync;
-        bool m_fullscreen;
-        bool m_enableTitlebar;
-        bool m_fixedTimestep;
-
         /* Custom */
         StepTimer m_timer;
+        bool m_fixedTimestep;
 
         /* Win32 */
-        HWND m_hwnd;
-        HINSTANCE m_instance;
-        u16 m_width;
-        u16 m_height;
+        Window m_window;
 
         /* DirectX */
-#pragma message("TODO: Figure out how to initialize this in the correct order without a unique_ptr, just static allocation. Maybe move HWND and stuff into its own struct so those can be initialized by initWindow before initDirectX more simply")
-        std::unique_ptr<Graphics> m_graphics;
-
-        bool initWindow();
-        bool initDirectX();
+        Graphics m_graphics;
     };
 }
 

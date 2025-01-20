@@ -9,7 +9,7 @@ namespace AquaXP
         BORDER_U      = 0b0000000000000100,
         CLAMP_U       = 0b0000000000001000,
         MIRROR_ONCE_U = 0b0000000000010000,
-        
+
         WRAP_V        = 0b0000000000100000,
         MIRROR_V      = 0b0000000001000000,
         BORDER_V      = 0b0000000010000000,
@@ -28,8 +28,8 @@ namespace AquaXP
     public:
         AQUAXP_API Sampler(
             ID3D11Device* device,
-            D3D11_FILTER filterType = D3D11_FILTER_MIN_MAG_MIP_LINEAR,
-            TextureAddressMode textureAddressMode = static_cast<TextureAddressMode>(WRAP_U | WRAP_V | WRAP_W),
+            D3D11_FILTER filterType = D3D11_FILTER_ANISOTROPIC,
+            TextureAddressMode textureAddressMode = static_cast<TextureAddressMode>(CLAMP_U | CLAMP_V | CLAMP_W),
             DirectX::XMFLOAT4 border = DirectX::XMFLOAT4(0, 0, 0, 0)
         );
 

@@ -8,27 +8,27 @@ namespace AquaXP
     class Texture
     {
     public:
-        AQUAXP_API Texture(Graphics* graphics, std::string const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
-        AQUAXP_API Texture(Graphics* graphics, char const* path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, std::string const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, char const* path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, ID3D11DeviceContext* context, std::string const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
 
-        AQUAXP_API Texture(Graphics* graphics, std::wstring const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
-        AQUAXP_API Texture(Graphics* graphics, wchar_t const* path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, std::wstring const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, wchar_t const* path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, ID3D11DeviceContext* context, std::wstring const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
 
-        AQUAXP_API Texture(Graphics* graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, ID3D11DeviceContext* context, u8 const* data, sz size, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
 
-        AQUAXP_API Texture(Graphics* graphics, f32 width, f32 height, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
-        AQUAXP_API Texture(Graphics* graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, f32 width, f32 height, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc = { .Count = 1, .Quality = 0 }, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
 
-        AQUAXP_API Texture(Graphics* graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D>, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D>, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11Texture2D>, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
 
         AQUAXP_API ~Texture();
 
-        AQUAXP_API void use(Graphics const* graphics, u32 slot = TEX_ALBEDO) const;
+        AQUAXP_API void use(Graphics const& graphics, u32 slot = TEX_ALBEDO) const;
         AQUAXP_API void use(ID3D11DeviceContext* device, u32 slot = TEX_ALBEDO) const;
 
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Texture2D> getTexture2D() const;
@@ -43,8 +43,8 @@ namespace AquaXP
         AQUAXP_API D3D11_BIND_FLAG getFlags() const;
         AQUAXP_API bool getStatus() const;
 
-        AQUAXP_API void clear(Graphics const* graphics, f32 const clearColor[4] = CLEAR_COLOR) const;
-        AQUAXP_API void clearDepth(Graphics const* graphics) const;
+        AQUAXP_API void clear(Graphics const& graphics, f32 const clearColor[4] = CLEAR_COLOR) const;
+        AQUAXP_API void clearDepth(Graphics const& graphics) const;
 
     private:
         bool m_status;

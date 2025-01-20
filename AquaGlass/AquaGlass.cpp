@@ -1,5 +1,8 @@
 // AquaGlass.cpp : This file contains the 'main' function. Program execution begins and ends there.
 #include <iostream>
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
 #include "AquaXP.h"
 #include "DirectXMath.h"
@@ -35,9 +38,9 @@ int main()
     Application app(800, 600, L"AquaGlass", false, false, false, true);
 
     /* Graphics object contains the DX11 context and device objects */
-    auto graphics = app.getGraphics();
-    auto device = graphics->getDevice().Get();
-    auto context = graphics->getContext().Get();
+    auto& graphics = app.getGraphics();
+    auto device = graphics.getDevice().Get();
+    auto context = graphics.getContext().Get();
 
     /* Build the Vertex Input Layot with default data formats*/
     InputLayoutBuilder layoutBuilder;
@@ -58,16 +61,12 @@ int main()
     Sampler sampler(device);
     sampler.use(context);
 
-    /* Load an image, bound to an SRV by default */
-    Texture texture(graphics, L"Assets/Box.png");
-    texture.use(context);
-
     /* Create a CBuffer with necessary 3D projection projection and view matrices */
     CBuffer<Matrices> matrices(device, {
         .world = XMMatrixTranspose(XMMatrixIdentity()), /* Matrices need to be transposed because the GPU uses column-major representation */
         .view = XMMatrixTranspose(XMMatrixLookAtLH(
-            XMVectorSet(0, 0, -3.0f, 0), /* Camera is pulled back 3 units*/
-            XMVectorSet(0, 0, 1, 0), /* Camera is looking forward in Z direction */
+            XMVectorSet(5.0f, 3.0f, -5.0f, 0), /* Camera is pulled back 3 units*/
+            XMVector3Normalize(XMVectorSet(-5.0f, -3.0f, 5.0f, 0)), /* Camera is looking forward in Z direction */
             XMVectorSet(0, 1, 0, 0)
         )),
         .projection = XMMatrixTranspose(XMMatrixPerspectiveFovLH(M_PI / 4.0f, 800.0f / 600.0f, 0.1f, 1000.0f))
@@ -85,17 +84,49 @@ int main()
     /* Time accumulator for rotation */
     f32 time = 0.0f;
 
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile("Assets/cowbox.obj", aiProcess_Triangulate);
+    std::vector<UINT> indices;
+    std::vector<Vertex> vertices;
+    unique_ptr<Texture> texture;
+    for (int i = 0; i < scene->mNumMeshes; i++)
+    {
+        auto mesh = scene->mMeshes[i];
+        for (int j = 0; j < mesh->mNumVertices; j++)
+        {
+            auto pos = mesh->mVertices[j];
+            auto tex = mesh->mTextureCoords[0][j];
+            auto normal = mesh->mNormals[j];
+
+            vertices.push_back({
+                .pos = XMFLOAT3(pos.x, pos.y, pos.z),
+                .color = XMFLOAT4(0, 0, 0, 0),
+                .normal = XMFLOAT3(normal.x, normal.y, normal.z),
+                .uv = XMFLOAT2(tex.x, tex.y),
+            });
+        }
+        for (int j = 0; j < mesh->mNumFaces; j++)
+        {
+            auto face = mesh->mFaces[j];
+            for (int k = 0; k < face.mNumIndices; k++)
+            {
+                indices.push_back(face.mIndices[k]);
+            }
+        }
+        auto material = scene->mMaterials[mesh->mMaterialIndex];
+        aiString texturePath;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
+        {
+            texture = make_unique<Texture>(graphics, "Assets/" + string(texturePath.C_Str()));
+            texture->use(context);
+        }
+    }
+
     /* Simple textured triangle */
     Mesh<Vertex> mesh(
         device,
-        {
-            { XMFLOAT3(0, 0.5f, -0.1f), XMFLOAT4(1.0f, 0, 0, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(0.5f, 0.0f)},      /* top front */
-            { XMFLOAT3(0.5f, -0.5f, -0.1f), XMFLOAT4(0, 1.0f, 0, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 1.0f)},  /* bottom right front*/
-            { XMFLOAT3(-0.5f, -0.5f, -0.1f), XMFLOAT4(0, 0, 1.0f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(0.0f, 1.0f)}  /* bottom left front*/
-        },
-        {
-            0, 1, 2 // front face
-        }
+        vertices,
+        indices
     );
     mesh.use(context);
 
@@ -105,11 +136,11 @@ int main()
         {
             matrices.bind(context, 0);
             //graphics->resetRenderTarget();
-            graphics->getBackBuffer()->clear(graphics, color);
-            graphics->getDepthBuffer()->clearDepth(graphics);
+            graphics.getBackBuffer()->clear(graphics, color);
+            graphics.getDepthBuffer()->clearDepth(graphics);
 
             mesh.useAndDraw(context);
-            graphics->present();
+            graphics.present();
         },
         [&](Application* appl, f32 dt)
         {

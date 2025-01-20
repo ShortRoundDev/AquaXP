@@ -38,7 +38,7 @@ Texture::Texture(
         flags,
         0,
         D3D11_RESOURCE_MISC_GENERATE_MIPS,
-        DirectX::WIC_LOADER_FLAGS::WIC_LOADER_DEFAULT,
+        DirectX::WIC_LOADER_FLAGS::WIC_LOADER_FORCE_RGBA32,
         buffer.GetAddressOf(),
         m_shaderResourceView.GetAddressOf()
     )))
@@ -310,29 +310,29 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
 }
 
 
-Texture::Texture(Graphics* graphics, std::string const& path, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), graphics->getContext().Get(), path, flags) { }
+Texture::Texture(Graphics const& graphics, std::string const& path, D3D11_BIND_FLAG flags) :
+    Texture(graphics.getDevice().Get(), graphics.getContext().Get(), path, flags) { }
 
-Texture::Texture(Graphics* graphics, char const* path, D3D11_BIND_FLAG flags) :
+Texture::Texture(Graphics const& graphics, char const* path, D3D11_BIND_FLAG flags) :
     Texture(graphics, string(path), flags) { }
 
-Texture::Texture(Graphics* graphics, std::wstring const& path, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), graphics->getContext().Get(), path, flags) { }
+Texture::Texture(Graphics const& graphics, std::wstring const& path, D3D11_BIND_FLAG flags) :
+    Texture(graphics.getDevice().Get(), graphics.getContext().Get(), path, flags) { }
 
-Texture::Texture(Graphics* graphics, wchar_t const* path, D3D11_BIND_FLAG flags) :
+Texture::Texture(Graphics const& graphics, wchar_t const* path, D3D11_BIND_FLAG flags) :
     Texture(graphics, wstring(path), flags) { }
 
-Texture::Texture(Graphics* graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), width, height, sampleDesc, flags) { }
+Texture::Texture(Graphics const& graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags) :
+    Texture(graphics.getDevice().Get(), width, height, sampleDesc, flags) { }
 
-Texture::Texture(Graphics* graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), graphics->getContext().Get(), data, size, flags) { }
+Texture::Texture(Graphics const& graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags) :
+    Texture(graphics.getDevice().Get(), graphics.getContext().Get(), data, size, flags) { }
 
-Texture::Texture(Graphics* graphics, f32 width, f32 height, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), width, height, graphics->getMultiSamplingDesc(), flags) { }
+Texture::Texture(Graphics const& graphics, f32 width, f32 height, D3D11_BIND_FLAG flags) :
+    Texture(graphics.getDevice().Get(), width, height, graphics.getMultiSamplingDesc(), flags) { }
 
-Texture::Texture(Graphics* graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
-    Texture(graphics->getDevice().Get(), raw, flags) { }
+Texture::Texture(Graphics const& graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
+    Texture(graphics.getDevice().Get(), raw, flags) { }
 
 Texture::~Texture() = default;
 
@@ -343,9 +343,9 @@ void Texture::use(ID3D11DeviceContext* context, u32 slot) const
         context->PSSetShaderResources(slot, 1, m_shaderResourceView.GetAddressOf());
     }
 }
-void Texture::use(Graphics const* graphics, u32 slot) const
+void Texture::use(Graphics const& graphics, u32 slot) const
 {
-    use(graphics->getContext().Get(), slot);
+    use(graphics.getContext().Get(), slot);
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> Texture::getTexture2D() const
@@ -393,22 +393,22 @@ bool Texture::getStatus() const
     return m_status;
 }
 
-void Texture::clear(Graphics const* graphics, f32 const clearColor[4]) const
+void Texture::clear(Graphics const& graphics, f32 const clearColor[4]) const
 {
     if (m_renderTargetView)
     {
         graphics
-            ->getContext()
+            .getContext()
             ->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
     }
 }
 
-void Texture::clearDepth(Graphics const* graphics) const
+void Texture::clearDepth(Graphics const& graphics) const
 {
     if (m_depthStencilView)
     {
         graphics
-            ->getContext()
+            .getContext()
             ->ClearDepthStencilView(
                 m_depthStencilView.Get(),
                 D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
