@@ -65,8 +65,8 @@ int main()
     CBuffer<Matrices> matrices(device, {
         .world = XMMatrixTranspose(XMMatrixIdentity()), /* Matrices need to be transposed because the GPU uses column-major representation */
         .view = XMMatrixTranspose(XMMatrixLookAtLH(
-            XMVectorSet(5.0f, 3.0f, -5.0f, 0), /* Camera is pulled back 3 units*/
-            XMVector3Normalize(XMVectorSet(-5.0f, -3.0f, 5.0f, 0)), /* Camera is looking forward in Z direction */
+            XMVectorSet(-8.0f, 3.0f, 5.0f, 0), /* Camera is pulled back 3 units*/
+            XMVector3Normalize(XMVectorSet(5.0f, -3.0f, 5.0f, 0)), /* Camera is looking forward in Z direction */
             XMVectorSet(0, 1, 0, 0)
         )),
         .projection = XMMatrixTranspose(XMMatrixPerspectiveFovLH(M_PI / 4.0f, 800.0f / 600.0f, 0.1f, 1000.0f))
@@ -85,11 +85,11 @@ int main()
     f32 time = 0.0f;
 
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile("Assets/cowbox.obj", aiProcess_Triangulate);
+    const aiScene* scene = importer.ReadFile("Assets/Platform.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
     std::vector<UINT> indices;
     std::vector<Vertex> vertices;
     unique_ptr<Texture> texture;
-    for (int i = 0; i < scene->mNumMeshes; i++)
+    for (int i = 1; i < scene->mNumMeshes; i++)
     {
         auto mesh = scene->mMeshes[i];
         for (int j = 0; j < mesh->mNumVertices; j++)
@@ -121,6 +121,18 @@ int main()
             texture->use(context);
         }
     }
+    auto c = XMVectorSet(0, 0, 0, 0);
+    auto max = XMVectorSet(100, 100, 100, 0);
+
+    auto test = XMVectorSet(34, 34, 34, 0);
+    auto size = XMVectorSet(25, 25, 25, 0);
+    int value = 123;
+
+    OctreeNode<int> node(AABB(c, max));
+    node.tryInsert(make_pair(AABB(test, size), &value));
+
+    std::set<int*> aabb;
+    node.tryQuery(AABB(c, max), aabb);
 
     /* Simple textured triangle */
     Mesh<Vertex> mesh(
@@ -146,12 +158,12 @@ int main()
         {
             /* Rotate matrix on the Y Axis */
             time += dt;
-            modelTransform = XMMatrixRotationY(time / 100000000.0f * M_PI * 4.0); /* Time delta is in microseconds */
+            //modelTransform = XMMatrixRotationY(time / 100000000.0f * M_PI * 4.0); /* Time delta is in microseconds */
 
-            model.setData({
+            /*model.setData({
                 .model = XMMatrixTranspose(modelTransform)
             });
-            model.bind(context, 1);
+            model.bind(context, 1);*/
         }
     );
 }

@@ -18,12 +18,14 @@
 #include <memory>
 #include <stack>
 #include <array>
+#include <set>
 #include <functional>
 
 //DirectX
 #include "d3d11.h"
 #include "DirectXMath.h"
 #include <DirectXTK/WICTextureLoader.h>
+#include <DirectXTK/DDSTextureLoader.h>
 //Windows
 #include "wrl.h"
 #include <wrl/client.h>
@@ -32,5 +34,6 @@
 //Custom
 #include "Types.h"
 #include "Slots.h"
+#include "Concepts.h"
 
 #endif //PCH_H

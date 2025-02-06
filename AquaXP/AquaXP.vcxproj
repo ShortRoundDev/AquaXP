@@ -147,10 +147,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AABB.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="AquaXP.h" />
     <ClInclude Include="CBuffer.h" />
     <ClInclude Include="Concepts.h" />
+    <ClInclude Include="CubeMap.h" />
     <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Graphics.h" />
@@ -158,6 +160,7 @@
     <ClInclude Include="InputLayoutBuilder.h" />
     <ClInclude Include="MathHelpers.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="OctreeNode.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="PixelShader.h" />
@@ -171,11 +174,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="CubeMap.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ICamera.cpp" />
     <ClCompile Include="InputLayoutBuilder.cpp" />
     <ClCompile Include="MathHelpers.cpp" />
+    <ClCompile Include="OctreeNode.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

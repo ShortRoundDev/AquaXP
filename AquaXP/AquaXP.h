@@ -4,6 +4,7 @@
 #include <optional>
 #include <vector>
 #include <functional>
+#include <set>
 
 #include "framework.h"
 
@@ -14,6 +15,7 @@
 
 #include "Types.h"
 #include "Slots.h"
+#include "Concepts.h"
 
 #include "Application.h"
 #include "Graphics.h"
@@ -23,3 +25,5 @@
 #include "Mesh.h"
 #include "CBuffer.h"
 #include "Sampler.h"
+#include "AABB.h"
+#include "OctreeNode.h"

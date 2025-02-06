@@ -67,6 +67,12 @@
     <Filter Include="Header Files\Tools\Models">
       <UniqueIdentifier>{66c92954-31a5-4ca4-9752-df1fbf570ec5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Helpers\Physics">
+      <UniqueIdentifier>{c0e71dee-a24d-46c7-9e1b-471034cc5e54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Helpers\Physics">
+      <UniqueIdentifier>{cb2b9930-9b85-4e5a-b01f-7e19c7f83b7b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -132,6 +138,15 @@
     <ClInclude Include="Concepts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OctreeNode.h">
+      <Filter>Header Files\Helpers\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Header Files\Helpers\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -172,6 +187,12 @@
     </ClCompile>
     <ClCompile Include="PerspectiveCamera.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OctreeNode.cpp">
+      <Filter>Source Files\Helpers\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
