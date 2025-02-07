@@ -21,54 +21,54 @@ namespace AquaXP
 
     enum class PointShadowFace
     {
-        RIGHT = 0,
-        LEFT = 1,
-        UP = 2,
-        DOWN = 3,
-        FRONT = 4,
-        BACK = 5
+        Right = 0,
+        Left = 1,
+        Up = 2,
+        Down = 3,
+        Front = 4,
+        Back = 5
     };
 
     consteval std::pair<DirectX::XMVECTOR, DirectX::XMVECTOR> GetPointShadowMapLook(PointShadowFace face)
     {
         switch (face)
         {
-        case PointShadowFace::RIGHT:
+        case PointShadowFace::Right:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(1, 0, 0, 0),
                 DirectX::XMVectorSet(0, 1, 0, 0)
             );
         }
-        case PointShadowFace::LEFT:
+        case PointShadowFace::Left:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(-1, 0, 0, 0),
                 DirectX::XMVectorSet(0, 1, 0, 0)
             );
         }
-        case PointShadowFace::UP:
+        case PointShadowFace::Up:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, 1, 0, 0),
                 DirectX::XMVectorSet(0, 0, -1, 0)
             );
         }
-        case PointShadowFace::DOWN:
+        case PointShadowFace::Down:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, -1, 0, 0),
                 DirectX::XMVectorSet(0, 0, 1, 0)
             );
         }
-        case PointShadowFace::FRONT:
+        case PointShadowFace::Front:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, 0, 1, 0),
                 DirectX::XMVectorSet(0, 0, 1, 0)
             );
         }
-        case PointShadowFace::BACK:
+        case PointShadowFace::Back:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, 0, -1, 0),

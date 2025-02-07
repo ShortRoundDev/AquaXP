@@ -11,6 +11,10 @@ namespace AquaXP
             DirectX::XMVECTOR const& lookAt
         );
 
+        void setPos(DirectX::XMVECTOR const& pos);
+
         virtual void update(Application& application) override;
+    private:
+        DirectX::XMVECTOR m_pos;
     };
 }
