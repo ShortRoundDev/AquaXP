@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
+#include <directxtk/Keyboard.h>
+#include <directxtk/Mouse.h>
 
 #include "StepTimer.h"
 #include "Graphics.h"
+#include "ICamera.h"
 
 namespace AquaXP
 {
@@ -62,6 +65,11 @@ namespace AquaXP
         AQUAXP_API u16 getClientHeight() const;
 
         AQUAXP_API Graphics& getGraphics();
+        AQUAXP_API DirectX::Keyboard const& getKeyboard() const;
+        AQUAXP_API DirectX::Mouse const& getMouse() const;
+        AQUAXP_API void pushCamera(std::shared_ptr<ICamera> camera);
+        AQUAXP_API std::shared_ptr<ICamera> popCamera();
+        AQUAXP_API std::shared_ptr<ICamera> getCamera();
 
     private:
         /* Settings */
@@ -75,6 +83,12 @@ namespace AquaXP
 
         /* DirectX */
         Graphics m_graphics;
+
+        /* DirectXTK */
+        DirectX::Keyboard m_keyboard;
+        DirectX::Mouse m_mouse;
+
+        std::stack<std::shared_ptr<ICamera>> m_cameras;
     };
 }
 

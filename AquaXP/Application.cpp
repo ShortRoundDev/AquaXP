@@ -3,6 +3,7 @@
 
 using namespace AquaXP;
 using namespace std;
+using namespace DirectX;
 
 Window initWindow(
     u16 width,
@@ -138,9 +139,43 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
     switch (umsg)
     {
+    case WM_INPUT:
+    case WM_MOUSEMOVE:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_MOUSEWHEEL:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_MOUSEHOVER:
+        Mouse::ProcessMessage(umsg, wparam, lparam);
+        break;
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+        Keyboard::ProcessMessage(umsg, wparam, lparam);
+        break;
+    case WM_ACTIVATE:
+    case WM_ACTIVATEAPP:
+        Mouse::ProcessMessage(umsg, wparam, lparam);
+        Keyboard::ProcessMessage(umsg, wparam, lparam);
+        break;
+    case WM_SYSKEYDOWN:
+        if (wparam == VK_RETURN && (lparam & 0x60000000) == 0x20000000)
+        {
+            // Full screen;
+        }
+        Keyboard::ProcessMessage(umsg, wparam, lparam);
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_MOUSEACTIVATE:
+        // When you click to activate the window, we want Mouse to ignore that event.
+        return MA_ACTIVATEANDEAT;
     default:
         return DefWindowProc(hwnd, umsg, wparam, lparam);
     }
@@ -211,4 +246,31 @@ u16 Application::getWindowHeight() const
 Graphics& Application::getGraphics()
 {
     return m_graphics;
+}
+
+DirectX::Keyboard const& Application::getKeyboard() const
+{
+    return m_keyboard;
+}
+
+DirectX::Mouse const& Application::getMouse() const
+{
+    return m_mouse;
+}
+
+void Application::pushCamera(std::shared_ptr<ICamera> camera)
+{
+    m_cameras.push(camera);
+}
+
+std::shared_ptr<ICamera> Application::popCamera()
+{
+    auto camera = m_cameras.top();
+    m_cameras.pop();
+    return camera;
+}
+
+std::shared_ptr<ICamera> Application::getCamera()
+{
+    return m_cameras.top();
 }

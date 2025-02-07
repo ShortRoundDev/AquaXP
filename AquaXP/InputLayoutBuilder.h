@@ -238,6 +238,32 @@ namespace AquaXP
             return *this;
         }
 
+        InputLayoutBuilder& add(
+            char const* semantic,
+            UINT semanticIndex,
+            DXGI_FORMAT format,
+            UINT inputSlot,
+            std::optional<UINT> alignedByteOffset,
+            D3D11_INPUT_CLASSIFICATION inputSlotClass,
+            UINT instanceDataStepRate
+        )
+        {
+            m_layoutBuffer.push_back({
+                semantic,
+                semanticIndex,
+                format,
+                inputSlot,
+                alignedByteOffset.value_or(
+                    m_layoutBuffer.empty()
+                        ? 0
+                    : D3D11_APPEND_ALIGNED_ELEMENT
+                ),
+                inputSlotClass,
+                instanceDataStepRate
+                });
+            return *this;
+        }
+
 
         std::pair<D3D11_INPUT_ELEMENT_DESC const*, UINT> build() const
         {

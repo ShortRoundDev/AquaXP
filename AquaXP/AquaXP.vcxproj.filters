@@ -123,22 +123,13 @@
     <ClInclude Include="CBuffer.h">
       <Filter>Header Files\API\CBuffer</Filter>
     </ClInclude>
-    <ClInclude Include="Sampler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MathHelpers.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="ICamera.h">
       <Filter>Header Files\Tools\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="PerspectiveCamera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Concepts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CubeMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OctreeNode.h">
@@ -146,6 +137,15 @@
     </ClInclude>
     <ClInclude Include="AABB.h">
       <Filter>Header Files\Helpers\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="NoclipCamera.h">
+      <Filter>Header Files\Tools\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeMap.h">
+      <Filter>Header Files\API\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>Header Files\API</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -176,23 +176,23 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\API\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="Sampler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MathHelpers.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="ICamera.cpp">
       <Filter>Source Files\Tools\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="PerspectiveCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CubeMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OctreeNode.cpp">
       <Filter>Source Files\Helpers\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap.cpp">
+      <Filter>Header Files\API\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="NoclipCamera.cpp">
+      <Filter>Source Files\Tools\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp">
+      <Filter>Header Files\API</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
