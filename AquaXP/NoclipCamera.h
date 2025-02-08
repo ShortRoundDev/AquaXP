@@ -16,6 +16,6 @@ namespace AquaXP
             f32 farZ
         );
 
-        AQUAXP_API virtual void update(Application& application) override;
+        AQUAXP_API virtual void update(Application& application, f32 dt) override;
     };
 }

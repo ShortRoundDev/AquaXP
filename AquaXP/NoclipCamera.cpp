@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "MathHelpers.h"
 
+#include <iostream>
+
 using namespace AquaXP;
 using namespace DirectX;
 using namespace std;
@@ -28,13 +30,28 @@ AquaXP::NoclipCamera::NoclipCamera(
         farZ
     ) { }
 
-void AquaXP::NoclipCamera::update(Application& application)
+void AquaXP::NoclipCamera::update(Application& application, f32 dt)
 {
-    static const XMVECTOR s_baseForward = XMVectorSet(0, 0, 1, 0);
-    if (application.getKeyboard().GetState().IsKeyDown(Keyboard::Keys::W))
+    if (application.getKeyboard().IsKeyDown(Keyboard::Keys::W))
     {
         move(getLook() * 0.01f);
     }
-    
-    ICameraTemplate::update(application);
+
+    f32 yaw = static_cast<f32>(application.getMouse().x) * 0.01f,
+        pitch = -static_cast<f32>(application.getMouse().y) * 0.01f;
+
+    auto yawRot = XMQuaternionRotationAxis(m_up, yaw);
+    m_rotation = XMQuaternionMultiply(m_rotation, yawRot);
+
+    auto right = XMVector3Cross(getLook(), m_up);
+
+    auto pitchQuat = XMQuaternionRotationAxis(right, pitch);
+    m_rotation = XMQuaternionMultiply(m_rotation, pitchQuat);
+
+    /*m_rotation = XMQuaternionMultiply(
+        m_rotation,
+        XMQuaternionRotationRollPitchYaw(pitch, yaw, 0)
+    );*/
+
+    ICameraTemplate::update(application, dt);
 }

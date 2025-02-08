@@ -21,7 +21,7 @@ namespace AquaXP
     {
         static const DirectX::XMVECTOR s_baseForward = DirectX::XMVectorSet(0, 0, 1, 0);
         DirectX::XMVECTOR look, q;
-        look = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(pos, lookAt));
+        look = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(lookAt, pos));
         q = DirectX::XMVector3Cross(s_baseForward, look);
         return DirectX::XMVectorSetW(q, 1 + DirectX::XMVectorGetX(DirectX::XMVector3Dot(s_baseForward, look)));
 

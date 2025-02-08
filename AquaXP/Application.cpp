@@ -90,8 +90,12 @@ Application::Application(
 ) :
     m_window(initWindow(width, height, fullscreen, title, enableTitlebar, vSync)),
     m_fixedTimestep(fixedTimestep),
-    m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen)
+    m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen),
+    m_keyboard(),
+    m_mouse(),
+    m_mouseState(m_mouse.GetState())
 {
+    m_mouse.SetWindow(m_window.m_hwnd);
 }
 
 void Application::run(
@@ -116,6 +120,8 @@ void Application::run(
         }
         else
         {
+            updateMouse();
+            updateKeyboard();
             m_timer.Tick(this, update);
             draw(this);
         }
@@ -248,14 +254,14 @@ Graphics& Application::getGraphics()
     return m_graphics;
 }
 
-DirectX::Keyboard const& Application::getKeyboard() const
+DirectX::Keyboard::State const& Application::getKeyboard() const
 {
-    return m_keyboard;
+    return m_keyboardState;
 }
 
-DirectX::Mouse const& Application::getMouse() const
+DirectX::Mouse::State const& Application::getMouse() const
 {
-    return m_mouse;
+    return m_mouseState;
 }
 
 void Application::pushCamera(std::shared_ptr<ICamera> camera)
@@ -273,4 +279,25 @@ std::shared_ptr<ICamera> Application::popCamera()
 std::shared_ptr<ICamera> Application::getCamera()
 {
     return m_cameras.top();
+}
+
+void Application::setMouseMode(Mouse::Mode mode)
+{
+    m_mouse.SetMode(mode);
+    m_mouse.SetVisible(mode == Mouse::Mode::MODE_ABSOLUTE);
+}
+
+Mouse::Mode Application::getMouseMode() const
+{
+    return m_mouse.GetState().positionMode;
+}
+
+void Application::updateMouse()
+{
+    m_mouseState = m_mouse.GetState();
+}
+
+void Application::updateKeyboard()
+{
+    m_keyboardState = m_keyboard.GetState();
 }

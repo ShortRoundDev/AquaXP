@@ -1,6 +1,6 @@
-cbuffer Matrices : register(b0)
+cbuffer CameraBuffer : register(b0)
 {
-    matrix world;
     matrix view;
     matrix projection;
+    float3 pos;
 }

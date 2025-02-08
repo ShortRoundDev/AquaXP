@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MathHelpers.h"
+
 namespace AquaXP
 {
     struct CameraBuffer
@@ -24,7 +26,7 @@ namespace AquaXP
         virtual CameraBuffer const& getCameraBuffer() const = 0;
         virtual sz getCameraBufferSize() const = 0;
 
-        virtual void update(Application& application) = 0;
+        virtual void update(Application& application, f32 dt) = 0;
 
         virtual void setPos(DirectX::XMVECTOR const& pos) = 0;
         virtual DirectX::XMVECTOR const& getPos() const = 0;
@@ -115,8 +117,8 @@ namespace AquaXP
             case ProjectionType::Perspective:
             {
                 m_cameraBuffer.projection = DirectX::XMMatrixTranspose(
-                    DirectX::XMMatrixPerspectiveLH(
-                        m_width, m_height, m_nearZ, m_farZ
+                    DirectX::XMMatrixPerspectiveFovLH(
+                        m_fov, m_width / m_height, m_nearZ, m_farZ
                     )
                 );
                 break;
@@ -125,7 +127,7 @@ namespace AquaXP
             m_cameraBuffer.pos = m_pos;
         }
 
-        virtual void update(Application& application) override
+        virtual void update(Application& application, f32 dt) override
         {
             updateCameraBuffer();
         }
@@ -172,11 +174,7 @@ namespace AquaXP
 
         virtual void lookAt(DirectX::XMVECTOR const& pos) override
         {
-            static const DirectX::XMVECTOR s_baseForward = DirectX::XMVectorSet(0, 0, 1, 0);
-            DirectX::XMVECTOR look, q;
-            look = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(m_pos, pos));
-            q = DirectX::XMVector3Cross(s_baseForward, look);
-            m_rotation = DirectX::XMVectorSetW(q, 1 + DirectX::XMVectorGetX(DirectX::XMVector3Dot(s_baseForward, look)));
+            m_rotation = LookAtToQuaternion(m_pos, pos);
         }
 
         virtual DirectX::XMVECTOR getLook() const override
@@ -214,7 +212,7 @@ namespace AquaXP
         {
             m_height = height;
         }
-        
+
         virtual f32 getHeight() const override
         {
             return m_height;

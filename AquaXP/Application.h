@@ -65,11 +65,14 @@ namespace AquaXP
         AQUAXP_API u16 getClientHeight() const;
 
         AQUAXP_API Graphics& getGraphics();
-        AQUAXP_API DirectX::Keyboard const& getKeyboard() const;
-        AQUAXP_API DirectX::Mouse const& getMouse() const;
+        AQUAXP_API DirectX::Keyboard::State const& getKeyboard() const;
+        AQUAXP_API DirectX::Mouse::State const& getMouse() const;
         AQUAXP_API void pushCamera(std::shared_ptr<ICamera> camera);
         AQUAXP_API std::shared_ptr<ICamera> popCamera();
         AQUAXP_API std::shared_ptr<ICamera> getCamera();
+
+        AQUAXP_API void setMouseMode(DirectX::Mouse::Mode mode);
+        AQUAXP_API DirectX::Mouse::Mode getMouseMode() const;
 
     private:
         /* Settings */
@@ -86,9 +89,15 @@ namespace AquaXP
 
         /* DirectXTK */
         DirectX::Keyboard m_keyboard;
+        DirectX::Keyboard::State m_keyboardState;
+
         DirectX::Mouse m_mouse;
+        DirectX::Mouse::State m_mouseState;
 
         std::stack<std::shared_ptr<ICamera>> m_cameras;
+
+        void updateMouse();
+        void updateKeyboard();
     };
 }
 
