@@ -17,6 +17,9 @@
 #include "Slots.h"
 #include "Concepts.h"
 
+
+#include "ICamera.h"
+#include "NoclipCamera.h"
 #include "Application.h"
 #include "Graphics.h"
 #include "Texture.h"

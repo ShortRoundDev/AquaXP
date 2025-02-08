@@ -20,13 +20,6 @@ struct Vertex
     XMFLOAT2 uv;
 };
 
-struct Matrices
-{
-    XMMATRIX world;
-    XMMATRIX view;
-    XMMATRIX projection;
-};
-
 struct Model
 {
     XMMATRIX model;
@@ -36,6 +29,14 @@ int main()
 {
     /* Initialize Window and DirectX infrastructure */
     Application app(800, 600, L"AquaGlass", false, false, false, true);
+
+    app.pushCamera(make_shared<NoclipCamera>(
+        XMVectorSet(-8.0f, 3.0f, 5.0f, 0),
+        XMVectorSet(-3.0f, 0, 10.0f, 0),
+        800.0f, 600.0f,
+        M_PI / 4.0f,
+        0.0f, 1000.0f
+    ));
 
     /* Graphics object contains the DX11 context and device objects */
     auto& graphics = app.getGraphics();
@@ -89,10 +90,10 @@ int main()
     std::vector<UINT> indices;
     std::vector<Vertex> vertices;
     unique_ptr<Texture> texture;
-    for (int i = 1; i < scene->mNumMeshes; i++)
+    for (u32 i = 1; i < scene->mNumMeshes; i++)
     {
         auto mesh = scene->mMeshes[i];
-        for (int j = 0; j < mesh->mNumVertices; j++)
+        for (u32 j = 0; j < mesh->mNumVertices; j++)
         {
             auto pos = mesh->mVertices[j];
             auto tex = mesh->mTextureCoords[0][j];
@@ -105,10 +106,10 @@ int main()
                 .uv = XMFLOAT2(tex.x, tex.y),
             });
         }
-        for (int j = 0; j < mesh->mNumFaces; j++)
+        for (u32 j = 0; j < mesh->mNumFaces; j++)
         {
             auto face = mesh->mFaces[j];
-            for (int k = 0; k < face.mNumIndices; k++)
+            for (u32 k = 0; k < face.mNumIndices; k++)
             {
                 indices.push_back(face.mIndices[k]);
             }

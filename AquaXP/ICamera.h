@@ -20,7 +20,8 @@ namespace AquaXP
     class ICamera
     {
     public:
-        virtual CameraBuffer const* getCameraBuffer() const = 0;
+        virtual void updateCameraBuffer() = 0;
+        virtual CameraBuffer const& getCameraBuffer() const = 0;
         virtual sz getCameraBufferSize() const = 0;
 
         virtual void update(Application& application) = 0;
@@ -35,26 +36,32 @@ namespace AquaXP
         virtual ProjectionType getProjectionType() const = 0;
 
         virtual void lookAt(DirectX::XMVECTOR const& pos) = 0;
-        virtual DirectX::XMVECTOR const& getLook() const = 0;
+        virtual DirectX::XMVECTOR getLook() const = 0;
+
+        virtual void setUp(DirectX::XMVECTOR const& up) = 0;
+        virtual DirectX::XMVECTOR const& getUp() const = 0;
 
         virtual void move(DirectX::XMVECTOR const& diff) = 0;
 
-        virtual void setWidth(f32 width) const = 0;
-        virtual void setHeight(f32 height) const = 0;
+        virtual void setWidth(f32 width) = 0;
+        virtual f32 getWidth() const = 0;
 
-        virtual f32 getAspectRation() const = 0;
+        virtual void setHeight(f32 height) = 0;
+        virtual f32 getHeight() const = 0;
 
-        virtual void setFov(f32 fov) const = 0;
+        virtual f32 getAspectRatio() const = 0;
+
+        virtual void setFov(f32 fov) = 0;
         virtual f32 getFov() const = 0;
 
-        virtual void setNear(f32 nearZ) const = 0;
+        virtual void setNear(f32 nearZ) = 0;
         virtual f32 getNear() const = 0;
 
-        virtual void setFar(f32 farZ) const = 0;
+        virtual void setFar(f32 farZ) = 0;
         virtual f32 getFar() const = 0;
     };
 
-    template<typename T>
+    template<typename T = CameraBuffer>
     class ICameraTemplate : public ICamera
     {
         static_assert(
@@ -66,14 +73,64 @@ namespace AquaXP
             ProjectionType projectionType,
             DirectX::XMVECTOR const& pos,
             DirectX::XMVECTOR const& rotation,
+            DirectX::XMVECTOR const& up,
             f32 width,
             f32 height,
+            f32 fov,
             f32 nearZ,
             f32 farZ
         ) :
+            m_projectionType(projectionType),
+            m_pos(pos),
+            m_rotation(rotation),
+            m_up(up),
+            m_width(width),
+            m_height(height),
+            m_fov(fov),
+            m_nearZ(nearZ),
+            m_farZ(farZ),
+            m_cameraBuffer() { }
 
 
-        virtual T const* getCameraBuffer() const override
+        virtual void updateCameraBuffer() override
+        {
+            m_cameraBuffer.view = DirectX::XMMatrixTranspose(
+                DirectX::XMMatrixLookAtLH(
+                    m_pos,
+                    DirectX::XMVectorAdd(m_pos, getLook()),
+                    m_up
+                )
+            );
+            switch (m_projectionType)
+            {
+            case ProjectionType::Orthographic:
+            {
+                m_cameraBuffer.projection = DirectX::XMMatrixTranspose(
+                    DirectX::XMMatrixOrthographicLH(
+                        m_width, m_height, m_nearZ, m_farZ
+                    )
+                );
+                break;
+            }
+            case ProjectionType::Perspective:
+            {
+                m_cameraBuffer.projection = DirectX::XMMatrixTranspose(
+                    DirectX::XMMatrixPerspectiveLH(
+                        m_width, m_height, m_nearZ, m_farZ
+                    )
+                );
+                break;
+            }
+            }
+            m_cameraBuffer.pos = m_pos;
+        }
+
+        virtual void update(Application& application) override
+        {
+            updateCameraBuffer();
+        }
+
+        virtual CameraBuffer const& getCameraBuffer() const
         {
             return m_cameraBuffer;
         }
@@ -115,42 +172,97 @@ namespace AquaXP
 
         virtual void lookAt(DirectX::XMVECTOR const& pos) override
         {
-            static const s_baseForward = DirectX::XMVectorSet(0, 0, 1, 0);
-            DirectX::XMVECTOR look, q, a;
+            static const DirectX::XMVECTOR s_baseForward = DirectX::XMVectorSet(0, 0, 1, 0);
+            DirectX::XMVECTOR look, q;
             look = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(m_pos, pos));
             q = DirectX::XMVector3Cross(s_baseForward, look);
-            q = a;
-            return DirectX::XMVectorSetW(q, 1 + DirectX::XMVectorGetX(DirectX::XMVector3Dot(s_baseForward, look)));
+            m_rotation = DirectX::XMVectorSetW(q, 1 + DirectX::XMVectorGetX(DirectX::XMVector3Dot(s_baseForward, look)));
         }
 
-        virtual DirectX::XMVECTOR const& getLook() const override
+        virtual DirectX::XMVECTOR getLook() const override
         {
-            // rotate forward vec by quaternion
+            static const DirectX::XMVECTOR s_baseForward = DirectX::XMVectorSet(0, 0, 1, 0);
+            return DirectX::XMVector3Rotate(s_baseForward, m_rotation);
         }
 
-        virtual void move(DirectX::XMVECTOR const& diff) override;
+        virtual void move(DirectX::XMVECTOR const& diff) override
+        {
+            m_pos = DirectX::XMVectorAdd(m_pos, diff);
+        }
 
-        virtual void setWidth(f32 width) const override;
-        virtual void setHeight(f32 height) const override;
+        virtual void setUp(DirectX::XMVECTOR const& up) override
+        {
+            m_up = up;
+        }
 
-        virtual f32 getAspectRation() const override;
+        virtual DirectX::XMVECTOR const& getUp() const override
+        {
+            return m_up;
+        }
 
-        virtual void setFov(f32 fov) const override;
-        virtual f32 getFov() const override;
+        virtual void setWidth(f32 width) override
+        {
+            m_width = width;
+        }
 
-        virtual void setNear(f32 nearZ) const override;
-        virtual f32 getNear() const override;
+        virtual f32 getWidth() const override
+        {
+            return m_width;
+        }
 
-        virtual void setFar(f32 farZ) const override;
-        virtual f32 getFar() const override;
+        virtual void setHeight(f32 height) override
+        {
+            m_height = height;
+        }
+        
+        virtual f32 getHeight() const override
+        {
+            return m_height;
+        }
+
+        virtual f32 getAspectRatio() const override
+        {
+            return m_width / m_height;
+        }
+
+        virtual void setFov(f32 fov) override
+        {
+            m_fov = fov;
+        }
+
+        virtual f32 getFov() const override
+        {
+            return m_fov;
+        }
+
+        virtual void setNear(f32 nearZ) override
+        {
+            m_nearZ = nearZ;
+        }
+
+        virtual f32 getNear() const override
+        {
+            return m_nearZ;
+        }
+
+        virtual void setFar(f32 farZ) override
+        {
+            m_farZ = farZ;
+        }
+
+        virtual f32 getFar() const override
+        {
+            return m_farZ;
+        }
 
     protected:
         T m_cameraBuffer;
 
         ProjectionType m_projectionType;
-        DirectX::XMVECTOR const& m_pos;
-        DirectX::XMVECTOR const& m_rotation;
-        DirectX::XMVECTOR const& m_up;
+        DirectX::XMVECTOR m_pos;
+        DirectX::XMVECTOR m_rotation;
+        DirectX::XMVECTOR m_up;
+        f32 m_fov;
         f32 m_width;
         f32 m_height;
         f32 m_nearZ;

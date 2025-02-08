@@ -6,15 +6,16 @@ namespace AquaXP
     class NoclipCamera : public ICameraTemplate<CameraBuffer>
     {
     public:
-        NoclipCamera(
+        AQUAXP_API NoclipCamera(
             DirectX::XMVECTOR const& pos,
-            DirectX::XMVECTOR const& lookAt
+            DirectX::XMVECTOR const& lookAt,
+            f32 width,
+            f32 height,
+            f32 fov,
+            f32 nearZ,
+            f32 farZ
         );
 
-        void setPos(DirectX::XMVECTOR const& pos);
-
-        virtual void update(Application& application) override;
-    private:
-        DirectX::XMVECTOR m_pos;
+        AQUAXP_API virtual void update(Application& application) override;
     };
 }

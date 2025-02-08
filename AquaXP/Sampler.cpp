@@ -11,23 +11,23 @@ static inline D3D11_TEXTURE_ADDRESS_MODE getAddressMode(TextureAddressMode mode)
 {
     switch (mode)
     {
-    case WRAP_U:
+    case WrapU:
     {
         return D3D11_TEXTURE_ADDRESS_WRAP;
     }
-    case MIRROR_U:
+    case MirrorU:
     {
         return D3D11_TEXTURE_ADDRESS_MIRROR;
     }
-    case BORDER_U:
+    case BorderU:
     {
         return D3D11_TEXTURE_ADDRESS_BORDER;
     }
-    case CLAMP_U:
+    case ClampU:
     {
         return D3D11_TEXTURE_ADDRESS_CLAMP;
     }
-    case MIRROR_ONCE_U:
+    case MirrorOnceU:
     {
         return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
     }
