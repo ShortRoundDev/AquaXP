@@ -29,14 +29,22 @@ int main()
 {
     /* Initialize Window and DirectX infrastructure */
     Application app(800, 600, L"AquaGlass", false, false, false, true);
-    auto camera = make_shared<NoclipCamera>(
-        XMVectorSet(0.0f, 8.0f, -16.0f, 0),
-        XMVectorSet(0, 0, 0, 0),
-        800.0f, 600.0f,
-        M_PI / 4.0f,
-        0.1f, 1000.0f
+    CameraContext cameraContext(
+        make_shared<NoclipCameraController>(),
+        make_shared<ICameraTemplate<CameraBuffer>>(
+            ProjectionType::Perspective,
+            XMVectorSet(0.0f, 8.0f, -16.0f, 0),
+            LookAtToQuaternion(
+                XMVectorSet(0.0f, 8.0f, -16.0f, 0),
+                XMVectorSet(0.0f, 8.0f, -15.0f, 0)
+            ),
+            XMVectorSet(0, 1, 0, 0),
+            800.0f, 600.0f,
+            M_PI / 4.0f,
+            0.1f, 1000.0f
+        )
     );
-    app.pushCamera(camera);
+    app.pushCameraContext(cameraContext);
     app.setMouseMode(Mouse::Mode::MODE_RELATIVE);
 
     /* Graphics object contains the DX11 context and device objects */
@@ -64,7 +72,7 @@ int main()
     sampler.use(context);
 
     /* Create a CBuffer with necessary 3D projection projection and view matrices */
-    CBuffer<CameraBuffer> matrices(device, camera->getCameraBuffer());
+    CBuffer<CameraBuffer> matrices(device, cameraContext.m_camera->getCameraBuffer());
     matrices.bind(context, 0);
 
     /* Initialize model transform to identity matrix */
@@ -140,7 +148,7 @@ int main()
     app.run(
         [&](Application* appl)
         {
-            matrices.setData(camera->getCameraBuffer());
+            matrices.setData(cameraContext.m_camera->getCameraBuffer());
             matrices.bind(context, 0);
             //graphics->resetRenderTarget();
             graphics.getBackBuffer()->clear(graphics, color);
@@ -151,17 +159,7 @@ int main()
         },
         [&](Application* appl, f32 dt)
         {
-            /* Rotate matrix on the Y Axis */
             time += dt;
-            camera->update(app, dt);
-            //camera->setPos(XMVectorSet(0, 8.0f, -16.0f, 0));
-            //camera->lookAt(XMVectorSet(0, 0, 0, 0));
-            //modelTransform = XMMatrixRotationY(time / 100000000.0f * M_PI * 4.0); /* Time delta is in microseconds */
-
-            /*model.setData({
-                .model = XMMatrixTranspose(modelTransform)
-            });
-            model.bind(context, 1);*/
         }
     );
 }

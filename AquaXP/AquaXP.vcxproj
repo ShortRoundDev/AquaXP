@@ -160,7 +160,7 @@
     <ClInclude Include="InputLayoutBuilder.h" />
     <ClInclude Include="MathHelpers.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="NoclipCamera.h" />
+    <ClInclude Include="NoclipCameraController.h" />
     <ClInclude Include="OctreeNode.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PixelShader.h" />
@@ -180,7 +180,7 @@
     <ClCompile Include="ICamera.cpp" />
     <ClCompile Include="InputLayoutBuilder.cpp" />
     <ClCompile Include="MathHelpers.cpp" />
-    <ClCompile Include="NoclipCamera.cpp" />
+    <ClCompile Include="NoclipCameraController.cpp" />
     <ClCompile Include="OctreeNode.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

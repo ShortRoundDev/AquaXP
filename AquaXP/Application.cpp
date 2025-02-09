@@ -122,7 +122,11 @@ void Application::run(
         {
             updateMouse();
             updateKeyboard();
-            m_timer.Tick(this, update);
+            m_timer.Tick(this, [&](Application* app, f32 dt) -> void
+                {
+                    updateCamera(dt);
+                    update(app, dt);
+                });
             draw(this);
         }
     }
@@ -264,20 +268,64 @@ DirectX::Mouse::State const& Application::getMouse() const
     return m_mouseState;
 }
 
-void Application::pushCamera(std::shared_ptr<ICamera> camera)
+bool Application::tryPushCamera(std::shared_ptr<ICamera> camera)
 {
-    m_cameras.push(camera);
+    if (m_cameras.size() == 0)
+    {
+        return false;
+    }
+    // using current controller, with new camera
+    auto const& context = m_cameras.top();
+    m_cameras.push(CameraContext(context.m_controller, camera));
+    return true;
 }
 
-std::shared_ptr<ICamera> Application::popCamera()
+bool Application::tryPushCameraController(std::shared_ptr<ICameraController> controller)
 {
+    if (m_cameras.size() == 0)
+    {
+        return false;
+    }
+
+    auto const& context = m_cameras.top();
+    m_cameras.push(CameraContext(controller, context.m_camera));
+    return true;
+}
+
+void Application::pushCameraContext(
+    std::shared_ptr<ICameraController> cameraController,
+    std::shared_ptr<ICamera> camera
+)
+{
+    m_cameras.push(CameraContext(
+        cameraController,
+        camera
+    ));
+}
+
+void Application::pushCameraContext(CameraContext const& cameraContext)
+{
+    m_cameras.push(cameraContext);
+}
+
+optional<CameraContext> Application::popCamera()
+{
+    if (m_cameras.size() == 0)
+    {
+        return nullopt;
+    }
+
     auto camera = m_cameras.top();
     m_cameras.pop();
     return camera;
 }
 
-std::shared_ptr<ICamera> Application::getCamera()
+optional<CameraContext> Application::getCamera() const
 {
+    if (m_cameras.size() == 0)
+    {
+        return nullopt;
+    }
     return m_cameras.top();
 }
 
@@ -300,4 +348,15 @@ void Application::updateMouse()
 void Application::updateKeyboard()
 {
     m_keyboardState = m_keyboard.GetState();
+}
+
+void Application::updateCamera(f32 dt)
+{
+    if (m_cameras.size() == 0)
+    {
+        return;
+    }
+    auto& context = m_cameras.top();
+    context.m_controller->update(*this, *context.m_camera, dt);
+    context.m_camera->update(*this, dt);
 }

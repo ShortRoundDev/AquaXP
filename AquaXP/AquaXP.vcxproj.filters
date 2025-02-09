@@ -138,7 +138,7 @@
     <ClInclude Include="AABB.h">
       <Filter>Header Files\Helpers\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="NoclipCamera.h">
+    <ClInclude Include="NoclipCameraController.h">
       <Filter>Header Files\Tools\Camera</Filter>
     </ClInclude>
     <ClInclude Include="CubeMap.h">
@@ -188,7 +188,7 @@
     <ClCompile Include="CubeMap.cpp">
       <Filter>Header Files\API\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="NoclipCamera.cpp">
+    <ClCompile Include="NoclipCameraController.cpp">
       <Filter>Source Files\Tools\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Sampler.cpp">

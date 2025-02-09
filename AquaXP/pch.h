@@ -20,6 +20,7 @@
 #include <array>
 #include <set>
 #include <functional>
+#include <numbers>
 
 //DirectX
 #include "d3d11.h"

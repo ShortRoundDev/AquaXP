@@ -19,7 +19,7 @@
 
 
 #include "ICamera.h"
-#include "NoclipCamera.h"
+#include "NoclipCameraController.h"
 #include "Application.h"
 #include "Graphics.h"
 #include "Texture.h"

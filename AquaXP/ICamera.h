@@ -32,6 +32,8 @@ namespace AquaXP
         virtual DirectX::XMVECTOR const& getPos() const = 0;
 
         virtual void setRotation(DirectX::XMVECTOR const& quaternion) = 0;
+        virtual void rotate(DirectX::XMVECTOR const& quaternion) = 0;
+
         virtual DirectX::XMVECTOR const& getRotation() const = 0;
 
         virtual void setProjectionType(ProjectionType projectionType) = 0;
@@ -61,6 +63,12 @@ namespace AquaXP
 
         virtual void setFar(f32 farZ) = 0;
         virtual f32 getFar() const = 0;
+    };
+
+    class ICameraController
+    {
+    public:
+        AQUAXP_API virtual void update(Application& application, ICamera& camera, f32 dt) = 0;
     };
 
     template<typename T = CameraBuffer>
@@ -155,6 +163,11 @@ namespace AquaXP
         virtual void setRotation(DirectX::XMVECTOR const& quaternion) override
         {
             m_rotation = quaternion;
+        }
+
+        virtual void rotate(DirectX::XMVECTOR const& quaternion) override
+        {
+            m_rotation = DirectX::XMQuaternionMultiply(m_rotation, quaternion);
         }
 
         virtual DirectX::XMVECTOR const& getRotation() const override
@@ -266,5 +279,17 @@ namespace AquaXP
         f32 m_nearZ;
         f32 m_farZ;
 
+    };
+
+    struct CameraContext
+    {
+        std::shared_ptr<ICameraController> m_controller;
+        std::shared_ptr<ICamera> m_camera;
+
+        CameraContext(
+            std::shared_ptr<ICameraController> controller,
+            std::shared_ptr<ICamera> camera
+        ) : m_controller(controller),
+            m_camera(camera) { }
     };
 }

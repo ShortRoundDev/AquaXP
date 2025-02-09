@@ -67,9 +67,18 @@ namespace AquaXP
         AQUAXP_API Graphics& getGraphics();
         AQUAXP_API DirectX::Keyboard::State const& getKeyboard() const;
         AQUAXP_API DirectX::Mouse::State const& getMouse() const;
-        AQUAXP_API void pushCamera(std::shared_ptr<ICamera> camera);
-        AQUAXP_API std::shared_ptr<ICamera> popCamera();
-        AQUAXP_API std::shared_ptr<ICamera> getCamera();
+
+        AQUAXP_API bool tryPushCamera(std::shared_ptr<ICamera> camera);
+        AQUAXP_API bool tryPushCameraController(std::shared_ptr<ICameraController> controller);
+
+        AQUAXP_API void pushCameraContext(
+            std::shared_ptr<ICameraController> cameraController,
+            std::shared_ptr<ICamera> camera
+        );
+        AQUAXP_API void pushCameraContext(CameraContext const& cameraContext);
+
+        AQUAXP_API std::optional<CameraContext> popCamera();
+        AQUAXP_API std::optional<CameraContext> getCamera() const;
 
         AQUAXP_API void setMouseMode(DirectX::Mouse::Mode mode);
         AQUAXP_API DirectX::Mouse::Mode getMouseMode() const;
@@ -94,10 +103,11 @@ namespace AquaXP
         DirectX::Mouse m_mouse;
         DirectX::Mouse::State m_mouseState;
 
-        std::stack<std::shared_ptr<ICamera>> m_cameras;
+        std::stack<CameraContext> m_cameras;
 
         void updateMouse();
         void updateKeyboard();
+        void updateCamera(f32 dt);
     };
 }
 
