@@ -5,6 +5,11 @@ using namespace AquaXP;
 using namespace std;
 using namespace DirectX;
 
+template<class... Ts> struct overloaded : Ts... {
+    using Ts::operator()...;
+};
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
 Window initWindow(
     u16 width,
     u16 height,
@@ -359,6 +364,37 @@ void Application::setMouseMode(Mouse::Mode mode)
 Mouse::Mode Application::getMouseMode() const
 {
     return m_mouse.GetState().positionMode;
+}
+
+std::optional<i32> Application::findKeys(DirectX::Keyboard::Keys key) const
+{
+    for (i32 i = 0; i < g_maxActions; i++)
+    {
+        auto action = m_actionBindings[i];
+        if (!action.has_value())
+        {
+            continue;
+        }
+        if(action.value() == key)
+        {
+            return i;
+        }
+    }
+    return nullopt;
+}
+
+bool Application::tryBindAction(i32 action, DirectX::Keyboard::Keys key, i32& existingAction)
+{
+    if (action >= g_maxActions)
+    {
+        return false;
+    }
+    auto existing = findKeys(key);
+    if (existing.has_value())
+    {
+        existingAction = existing.value();
+        return false;
+    }
 }
 
 void Application::updateMouse()

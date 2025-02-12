@@ -2,6 +2,7 @@
 #include <string>
 #include <directxtk/Keyboard.h>
 #include <directxtk/Mouse.h>
+#include <directxtk/GamePad.h>
 
 #include "StepTimer.h"
 #include "Graphics.h"
@@ -22,11 +23,57 @@ namespace AquaXP
         bool m_enableTitlebar;
     };
 
+    enum class MouseButton
+    {
+        NONE,
+        Left,
+        Right,
+        Middle,
+        x1,
+        x2
+    };
+
+    enum class GamePadButton
+    {
+        NONE,
+        A,
+        B,
+        X,
+        Y,
+        LeftStick,
+        RightStick,
+        LeftShoulder,
+        RightShoulder,
+        Back,
+        Start,
+
+        DPadUp,
+        DPadDown,
+        DPadRight,
+        DPadLeft,
+
+        LeftThumbAxisUp,
+        LeftThumbAxisDown,
+        LeftThumAxisRight,
+        LeftThumbAxisLeft,
+
+        RightThumbUp,
+        RightThumbDown,
+        RightThumbRight,
+        RightThumbLeft,
+
+        TriggerLeft,
+        TriggerRight,
+
+    };
+
     using ActionBinding = std::variant<
-        std::tuple<DirectX::Keyboard::Keys>,
-        std::tuple<DirectX::Keyboard::Keys, DirectX::Keyboard::Keys>,
-        std::tuple<DirectX::Keyboard::Keys, DirectX::Keyboard::Keys, DirectX::Keyboard::Keys>
+        DirectX::Keyboard::Keys,
+        GamePadButton,
+        MouseButton
     >;
+
+    constexpr sz g_maxActions = 256;
 
     class Application
     {
@@ -94,6 +141,9 @@ namespace AquaXP
         AQUAXP_API void setMouseMode(DirectX::Mouse::Mode mode);
         AQUAXP_API DirectX::Mouse::Mode getMouseMode() const;
 
+        AQUAXP_API bool tryBindAction(i32 action, DirectX::Keyboard::Keys key, i32& existingAction);
+        AQUAXP_API void clearAction(i32 action);
+
     private:
         /* Settings */
 
@@ -111,7 +161,7 @@ namespace AquaXP
         DirectX::Keyboard m_keyboard;
         DirectX::Keyboard::State m_keyboardState;
         DirectX::Keyboard::KeyboardStateTracker m_keyboardStateTracker;
-        std::unordered_map<int, ActionBinding> m_actionBindings;
+        std::array<std::optional<DirectX::Keyboard::Keys>, g_maxActions> m_actionBindings;
 
         DirectX::Mouse m_mouse;
         DirectX::Mouse::State m_mouseState;
@@ -122,6 +172,9 @@ namespace AquaXP
         void updateMouse();
         void updateKeyboard();
         void updateCamera(f32 dt);
+
+        std::optional<i32> findKeys(DirectX::Keyboard::Keys keys) const;
+
     };
 }
 
