@@ -92,8 +92,10 @@ Application::Application(
     m_fixedTimestep(fixedTimestep),
     m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen),
     m_keyboard(),
+    m_keyboardStateTracker(),
     m_mouse(),
-    m_mouseState(m_mouse.GetState())
+    m_mouseState(m_mouse.GetState()),
+    m_actionBindings()
 {
     m_mouse.SetWindow(m_window.m_hwnd);
 }
@@ -120,10 +122,10 @@ void Application::run(
         }
         else
         {
-            updateMouse();
-            updateKeyboard();
             m_timer.Tick(this, [&](Application* app, f32 dt) -> void
                 {
+                    updateMouse();
+                    updateKeyboard();
                     updateCamera(dt);
                     update(app, dt);
                 });
@@ -268,6 +270,25 @@ DirectX::Mouse::State const& Application::getMouse() const
     return m_mouseState;
 }
 
+bool Application::isKeyDown(DirectX::Keyboard::Keys key) const
+{
+    return m_keyboardState.IsKeyDown(key);
+}
+
+bool Application::isKeyUp(DirectX::Keyboard::Keys key) const
+{
+    return m_keyboardState.IsKeyUp(key);
+}
+
+bool Application::keyPressed(DirectX::Keyboard::Keys key) const
+{
+    return m_keyboardStateTracker.IsKeyPressed(key);
+}
+bool Application::keyReleased(DirectX::Keyboard::Keys key) const
+{
+    return m_keyboardStateTracker.IsKeyReleased(key);
+}
+
 bool Application::tryPushCamera(std::shared_ptr<ICamera> camera)
 {
     if (m_cameras.size() == 0)
@@ -348,6 +369,7 @@ void Application::updateMouse()
 void Application::updateKeyboard()
 {
     m_keyboardState = m_keyboard.GetState();
+    m_keyboardStateTracker.Update(m_keyboardState);
 }
 
 void Application::updateCamera(f32 dt)

@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <set>
+#include <variant>
 
 #include "framework.h"
 
@@ -30,3 +31,5 @@
 #include "Sampler.h"
 #include "AABB.h"
 #include "OctreeNode.h"
+
+#include "RegisterAction.h"

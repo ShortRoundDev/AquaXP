@@ -164,6 +164,7 @@
     <ClInclude Include="OctreeNode.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="RegisterAction.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="ShaderHelper.h" />
     <ClInclude Include="StepTimer.h" />

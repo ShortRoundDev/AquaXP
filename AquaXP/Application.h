@@ -22,6 +22,12 @@ namespace AquaXP
         bool m_enableTitlebar;
     };
 
+    using ActionBinding = std::variant<
+        std::tuple<DirectX::Keyboard::Keys>,
+        std::tuple<DirectX::Keyboard::Keys, DirectX::Keyboard::Keys>,
+        std::tuple<DirectX::Keyboard::Keys, DirectX::Keyboard::Keys, DirectX::Keyboard::Keys>
+    >;
+
     class Application
     {
     public:
@@ -68,6 +74,11 @@ namespace AquaXP
         AQUAXP_API DirectX::Keyboard::State const& getKeyboard() const;
         AQUAXP_API DirectX::Mouse::State const& getMouse() const;
 
+        AQUAXP_API bool isKeyDown(DirectX::Keyboard::Keys key) const;
+        AQUAXP_API bool isKeyUp(DirectX::Keyboard::Keys key) const;
+        AQUAXP_API bool keyPressed(DirectX::Keyboard::Keys key) const;
+        AQUAXP_API bool keyReleased(DirectX::Keyboard::Keys key) const;
+
         AQUAXP_API bool tryPushCamera(std::shared_ptr<ICamera> camera);
         AQUAXP_API bool tryPushCameraController(std::shared_ptr<ICameraController> controller);
 
@@ -99,10 +110,13 @@ namespace AquaXP
         /* DirectXTK */
         DirectX::Keyboard m_keyboard;
         DirectX::Keyboard::State m_keyboardState;
+        DirectX::Keyboard::KeyboardStateTracker m_keyboardStateTracker;
+        std::unordered_map<int, ActionBinding> m_actionBindings;
 
         DirectX::Mouse m_mouse;
         DirectX::Mouse::State m_mouseState;
 
+        /* Cameras */
         std::stack<CameraContext> m_cameras;
 
         void updateMouse();

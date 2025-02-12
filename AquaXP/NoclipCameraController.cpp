@@ -10,6 +10,8 @@ using namespace DirectX;
 using namespace std;
 using namespace std::numbers;
 
+using Keys = Keyboard::Keys;
+
 NoclipCameraController::NoclipCameraController(
     f32 pitch,
     f32 yaw
@@ -18,8 +20,7 @@ NoclipCameraController::NoclipCameraController(
 
 void NoclipCameraController::update(Application& application, ICamera& camera, f32 dt)
 {
-    static const XMVECTOR s_baseForward = XMVectorSet(0, 0, 1, 0);
-    if (application.getKeyboard().IsKeyDown(Keyboard::Keys::W))
+    if (application.getKeyboard().IsKeyDown(Keys::W))
     {
         camera.move(camera.getLook() * 0.1f);
     }
@@ -29,13 +30,14 @@ void NoclipCameraController::update(Application& application, ICamera& camera, f
 
     m_yaw += yaw;
     m_pitch += pitch;
-    if (m_pitch >= pi/2.0f)
+    f32 fpi = static_cast<f32>(pi);
+    if (m_pitch >= fpi/2.0f)
     {
-        m_pitch = pi/2.0f - 0.01f;
+        m_pitch = fpi/2.0f - 0.01f;
     }
-    else if (m_pitch <= -pi/2.0f)
+    else if (m_pitch <= -fpi/2.0f)
     {
-        m_pitch = -pi/2.0f + 0.01f;
+        m_pitch = -fpi/2.0f + 0.01f;
     }
     camera.setRotation(XMQuaternionRotationRollPitchYaw(m_pitch, m_yaw, 0.0f));
 }

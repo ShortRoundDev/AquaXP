@@ -21,6 +21,7 @@
 #include <set>
 #include <functional>
 #include <numbers>
+#include <variant>
 
 //DirectX
 #include "d3d11.h"

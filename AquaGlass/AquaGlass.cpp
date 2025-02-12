@@ -25,6 +25,9 @@ struct Model
     XMMATRIX model;
 };
 
+AQUA_REGISTER(FORWARD)
+AQUA_REGISTER(BACK)
+
 int main()
 {
     /* Initialize Window and DirectX infrastructure */
@@ -44,9 +47,9 @@ int main()
             0.1f, 1000.0f
         )
     );
+
     app.pushCameraContext(cameraContext);
     app.setMouseMode(Mouse::Mode::MODE_RELATIVE);
-
     /* Graphics object contains the DX11 context and device objects */
     auto& graphics = app.getGraphics();
     auto device = graphics.getDevice().Get();
