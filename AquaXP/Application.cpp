@@ -666,7 +666,7 @@ bool Application::gamePadButtonIsState(GamePadButton button, i32 playerNum, Game
     GamePad::ButtonStateTracker::ButtonState state;
     switch (button)
     {
-    case GamePadButton::NONE:
+    case GamePadButton::None:
         return false;
         break;
     case GamePadButton::A:
@@ -750,7 +750,7 @@ bool Application::mouseButtonIsState(MouseButton button, Mouse::ButtonStateTrack
     Mouse::ButtonStateTracker const& tracker = m_mouseButtonStateTracker;
     switch (button)
     {
-    case MouseButton::NONE:
+    case MouseButton::None:
         return false;
     case MouseButton::Left:
         return tracker.leftButton == checkState;

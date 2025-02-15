@@ -37,7 +37,7 @@ namespace AquaXP
 
     enum class AnalogInput
     {
-        NONE,
+        None,
         Keyboard,
         Mouse,
         GamePad
@@ -45,7 +45,7 @@ namespace AquaXP
 
     enum class MouseButton
     {
-        NONE,
+        None,
         Left,
         Right,
         Middle,
@@ -55,7 +55,7 @@ namespace AquaXP
 
     enum class GamePadButton
     {
-        NONE,
+        None,
         A,
         B,
         X,
@@ -148,11 +148,9 @@ namespace AquaXP
         AQUAXP_API std::optional<DirectX::GamePad::State const&> tryGetGamepad(i32 player = 0) const;
         AQUAXP_API std::optional<DirectX::GamePad::ButtonStateTracker const&> getGamepadStateTracker(i32 player = 0) const;
 
-        AQUAXP_API void setAnalogInputType(AnalogInput analogInput, i32 playerNum = 0);
-        AQUAXP_API AnalogInput getAnalogInputType(i32 playerNum = 0) const;
-
-        AQUAXP_API DirectX::XMVECTOR getAnalog1(i32 playerNum = 0);
-        AQUAXP_API DirectX::XMVECTOR getAnalog2(i32 playerNum = 0);
+        AQUAXP_API void setAxisType(AnalogInput analogInput, i32 axis, i32 playerNum = 0);
+        AQUAXP_API AnalogInput getAxisType(i32 axis, i32 playerNum = 0) const;
+        AQUAXP_API DirectX::XMVECTOR getAxis(i32 axis, i32 playerNum = 0) const;
 
         AQUAXP_API bool isKeyDown(DirectX::Keyboard::Keys key) const;
         AQUAXP_API bool isKeyUp(DirectX::Keyboard::Keys key) const;
