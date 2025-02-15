@@ -96,12 +96,28 @@ Application::Application(
     m_window(initWindow(width, height, fullscreen, title, enableTitlebar, vSync)),
     m_fixedTimestep(fixedTimestep),
     m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen),
+
     m_keyboard(),
+    m_keyboardState(m_keyboard.GetState()),
     m_keyboardStateTracker(),
+
     m_mouse(),
     m_mouseState(m_mouse.GetState()),
-    m_actionBindings()
+    m_mouseButtonStateTracker(),
+
+    m_gamePad(),
+    m_gamePadState(),
+    m_buttonStateTracker(),
+
+    m_actionBindings(),
+    m_analogInputType()
 {
+    m_analogInputType[0] = make_pair(AnalogInput::Keyboard, AnalogInput::Mouse);
+    for (i32 i = 1; i < g_maxGamePads; i++)
+    {
+        //TODO: COLLIN YOU WERE HERE
+        //m_analogInputType[i] = make_pair(AnalogInput::GamePad, AnalogInput::
+    }
     m_mouse.SetWindow(m_window.m_hwnd);
 }
 
@@ -270,9 +286,37 @@ DirectX::Keyboard::State const& Application::getKeyboard() const
     return m_keyboardState;
 }
 
+DirectX::Keyboard::KeyboardStateTracker const& Application::getKeyboardTracker() const
+{
+    return m_keyboardStateTracker;
+}
+
 DirectX::Mouse::State const& Application::getMouse() const
 {
     return m_mouseState;
+}
+
+DirectX::Mouse::ButtonStateTracker const& Application::getMouseStateTracker() const
+{
+    return m_mouseButtonStateTracker;
+}
+
+std::optional<DirectX::GamePad::State const&> Application::tryGetGamepad(i32 player = 0) const
+{
+    if (player < 0 || player >= g_maxGamePads)
+    {
+        return nullopt;
+    }
+    return make_optional(m_gamePadState[player]);
+}
+
+std::optional<DirectX::GamePad::ButtonStateTracker const&> Application::getGamepadStateTracker(i32 player = 0) const
+{
+    if (player < 0 || player >= g_maxGamePads)
+    {
+        return nullopt;
+    }
+    return make_optional(m_buttonStateTracker[player]);
 }
 
 bool Application::isKeyDown(DirectX::Keyboard::Keys key) const
@@ -285,13 +329,53 @@ bool Application::isKeyUp(DirectX::Keyboard::Keys key) const
     return m_keyboardState.IsKeyUp(key);
 }
 
-bool Application::keyPressed(DirectX::Keyboard::Keys key) const
+bool Application::isKeyPressed(DirectX::Keyboard::Keys key) const
 {
     return m_keyboardStateTracker.IsKeyPressed(key);
 }
-bool Application::keyReleased(DirectX::Keyboard::Keys key) const
+bool Application::isKeyReleased(DirectX::Keyboard::Keys key) const
 {
     return m_keyboardStateTracker.IsKeyReleased(key);
+}
+
+bool Application::isGamePadButtonDown(GamePadButton button, i32 playerNum = 0) const
+{
+    return gamePadButtonIsState(button, playerNum, GamePad::ButtonStateTracker::ButtonState::HELD);
+}
+
+bool Application::isGamePadButtonUp(GamePadButton button, i32 playerNum = 0) const
+{
+    return gamePadButtonIsState(button, playerNum, GamePad::ButtonStateTracker::ButtonState::UP);
+}
+
+bool Application::isGamePadButtonPressed(GamePadButton button, i32 playerNum) const
+{
+    return gamePadButtonIsState(button, playerNum, GamePad::ButtonStateTracker::ButtonState::PRESSED);
+}
+
+bool Application::isGamePadButtonReleased(GamePadButton button, i32 playerNum) const
+{
+    return gamePadButtonIsState(button, playerNum, GamePad::ButtonStateTracker::ButtonState::RELEASED);
+}
+
+bool Application::isMouseButtonDown(MouseButton button) const
+{
+    return mouseButtonIsState(button, Mouse::ButtonStateTracker::ButtonState::HELD);
+}
+
+bool Application::isMouseButtonUp(MouseButton button) const
+{
+    return mouseButtonIsState(button, Mouse::ButtonStateTracker::ButtonState::UP);
+}
+
+bool Application::isMouseButtonPressed(MouseButton button) const
+{
+    return mouseButtonIsState(button, Mouse::ButtonStateTracker::ButtonState::PRESSED);
+}
+
+bool Application::isMouseButtonReleased(MouseButton button) const
+{
+    return mouseButtonIsState(button, Mouse::ButtonStateTracker::ButtonState::RELEASED);
 }
 
 bool Application::tryPushCamera(std::shared_ptr<ICamera> camera)
@@ -366,7 +450,7 @@ Mouse::Mode Application::getMouseMode() const
     return m_mouse.GetState().positionMode;
 }
 
-std::optional<i32> Application::findKeys(DirectX::Keyboard::Keys key) const
+std::optional<i32> Application::findKeys(ActionBinding binding) const
 {
     for (i32 i = 0; i < g_maxActions; i++)
     {
@@ -375,7 +459,7 @@ std::optional<i32> Application::findKeys(DirectX::Keyboard::Keys key) const
         {
             continue;
         }
-        if(action.value() == key)
+        if(action.value() == binding)
         {
             return i;
         }
@@ -383,29 +467,181 @@ std::optional<i32> Application::findKeys(DirectX::Keyboard::Keys key) const
     return nullopt;
 }
 
-bool Application::tryBindAction(i32 action, DirectX::Keyboard::Keys key, i32& existingAction)
+bool Application::tryBindAction(i32 action, ActionBinding binding, i32& existingAction, bool force)
 {
-    if (action >= g_maxActions)
+    if (action >= g_maxActions || action < 0)
     {
         return false;
     }
-    auto existing = findKeys(key);
+    auto existing = findKeys(binding);
     if (existing.has_value())
     {
-        existingAction = existing.value();
+        if (force)
+        {
+            clearAction(existing.value());
+        }
+        else
+        {
+            existingAction = existing.value();
+            return false;
+        }
+    }
+
+    m_actionBindings[action] = binding;
+}
+
+void Application::clearAction(i32 action)
+{
+    if (action < 0 || action >= g_maxActions)
+    {
+        return;
+    }
+    m_actionBindings[action] = nullopt;
+}
+
+bool Application::isActionDown(i32 action, i32 playerNum) const
+{
+    if (action < 0 || action >= g_maxActions)
+    {
         return false;
     }
+    auto actionBinding = m_actionBindings[action];
+    if (!actionBinding.has_value())
+    {
+        return false;
+    }
+    return visit(
+        overloaded
+        {
+            [&](Keyboard::Keys key) -> bool
+            {
+                return getKeyboard().IsKeyDown(key);
+            },
+            [&](GamePadButton button) -> bool
+            {
+                return isGamePadButtonDown(button, playerNum);
+            },
+            [&](MouseButton button) -> bool
+            {
+                return isMouseButtonDown(button);
+            },
+        },
+        actionBinding.value()
+    );
+}
+
+bool Application::isActionUp(i32 action, i32 playerNum) const
+{
+    if (action < 0 || action >= g_maxActions)
+    {
+        return false;
+    }
+    auto actionBinding = m_actionBindings[action];
+    if (!actionBinding.has_value())
+    {
+        return false;
+    }
+    return visit(
+        overloaded
+        {
+            [&](Keyboard::Keys key) -> bool
+            {
+                return getKeyboard().IsKeyUp(key);
+            },
+            [&](GamePadButton button) -> bool
+            {
+                return isGamePadButtonUp(button, playerNum);
+            },
+            [&](MouseButton button) -> bool
+            {
+                return isMouseButtonUp(button);
+            },
+        },
+        actionBinding.value()
+    );
+}
+
+bool Application::isActionPressed(i32 action, i32 playerNum) const
+{
+    if (action < 0 || action >= g_maxActions)
+    {
+        return false;
+    }
+    auto actionBinding = m_actionBindings[action];
+    if (!actionBinding.has_value())
+    {
+        return false;
+    }
+    return visit(
+        overloaded
+        {
+            [&](Keyboard::Keys key) -> bool
+            {
+                return getKeyboardTracker().IsKeyPressed(key);
+            },
+            [&](GamePadButton button) -> bool
+            {
+               return isGamePadButtonPressed(button, playerNum);
+            },
+            [&](MouseButton button) -> bool
+            {
+                return isMouseButtonPressed(button);
+            }
+        },
+        actionBinding.value()
+    );
+}
+
+bool Application::isActionReleased(i32 action, i32 playerNum) const
+{
+    if (action < 0 || action >= g_maxActions)
+    {
+        return false;
+    }
+    auto actionBinding = m_actionBindings[action];
+    if (!actionBinding.has_value())
+    {
+        return false;
+    }
+    return visit(
+        overloaded
+        {
+            [&](Keyboard::Keys key) -> bool
+            {
+                return getKeyboardTracker().IsKeyReleased(key);
+            },
+            [&](GamePadButton button) -> bool
+            {
+                return isGamePadButtonReleased(button, playerNum);
+            },
+            [&](MouseButton button) -> bool
+            {
+                return isMouseButtonReleased(button);
+            },
+        },
+        actionBinding.value()
+    );
 }
 
 void Application::updateMouse()
 {
     m_mouseState = m_mouse.GetState();
+    m_mouseButtonStateTracker.Update(m_mouseState);
 }
 
 void Application::updateKeyboard()
 {
     m_keyboardState = m_keyboard.GetState();
     m_keyboardStateTracker.Update(m_keyboardState);
+}
+
+void Application::updateGamePad()
+{
+    for (i32 i = 0; i < g_maxGamePads; i++)
+    {
+        m_gamePadState[i] = m_gamePad.GetState(i);
+        m_buttonStateTracker[i].Update(m_gamePadState[i]);
+    }
 }
 
 void Application::updateCamera(f32 dt)
@@ -417,4 +653,114 @@ void Application::updateCamera(f32 dt)
     auto& context = m_cameras.top();
     context.m_controller->update(*this, *context.m_camera, dt);
     context.m_camera->update(*this, dt);
+}
+
+bool Application::gamePadButtonIsState(GamePadButton button, i32 playerNum, GamePad::ButtonStateTracker::ButtonState checkState) const
+{
+    if (playerNum < 0 || playerNum > g_maxGamePads)
+    {
+        return false;
+    }
+
+    GamePad::ButtonStateTracker const& tracker = m_buttonStateTracker[playerNum];
+    GamePad::ButtonStateTracker::ButtonState state;
+    switch (button)
+    {
+    case GamePadButton::NONE:
+        return false;
+        break;
+    case GamePadButton::A:
+        state = tracker.a;
+        break;
+    case GamePadButton::B:
+        state = tracker.b;
+        break;
+    case GamePadButton::X:
+        state = tracker.x;
+        break;
+    case GamePadButton::Y:
+        state = tracker.y;
+        break;
+    case GamePadButton::LeftStick:
+        state = tracker.leftStick;
+        break;
+    case GamePadButton::RightStick:
+        state = tracker.rightStick;
+        break;
+    case GamePadButton::LeftShoulder:
+        state = tracker.leftShoulder;
+        break;
+    case GamePadButton::RightShoulder:
+        state = tracker.rightShoulder;
+        break;
+    case GamePadButton::Back:
+        state = tracker.back;
+        break;
+    case GamePadButton::Start:
+        state = tracker.start;
+        break;
+    case GamePadButton::DPadUp:
+        state = tracker.dpadUp;
+        break;
+    case GamePadButton::DPadDown:
+        state = tracker.dpadUp;
+        break;
+    case GamePadButton::DPadRight:
+        state = tracker.dpadRight;
+        break;
+    case GamePadButton::DPadLeft:
+        state = tracker.dpadLeft;
+        break;
+    case GamePadButton::LeftThumbAxisUp:
+        state = tracker.leftStickUp;
+        break;
+    case GamePadButton::LeftThumbAxisDown:
+        state = tracker.leftStickDown;
+        break;
+    case GamePadButton::LeftThumbAxisRight:
+        state = tracker.leftStickRight;
+        break;
+    case GamePadButton::LeftThumbAxisLeft:
+        state = tracker.leftStickLeft;
+        break;
+    case GamePadButton::RightThumbUp:
+        state = tracker.rightStickUp;
+        break;
+    case GamePadButton::RightThumbDown:
+        state = tracker.rightStickDown;
+        break;
+    case GamePadButton::RightThumbRight:
+        state = tracker.rightStickRight;
+        break;
+    case GamePadButton::RightThumbLeft:
+        state = tracker.rightStickLeft;
+        break;
+    case GamePadButton::TriggerLeft:
+        state = tracker.leftTrigger;
+        break;
+    case GamePadButton::TriggerRight:
+        state = tracker.rightTrigger;
+        break;
+    }
+    return state == checkState;
+}
+
+bool Application::mouseButtonIsState(MouseButton button, Mouse::ButtonStateTracker::ButtonState checkState) const
+{
+    Mouse::ButtonStateTracker const& tracker = m_mouseButtonStateTracker;
+    switch (button)
+    {
+    case MouseButton::NONE:
+        return false;
+    case MouseButton::Left:
+        return tracker.leftButton == checkState;
+    case MouseButton::Right:
+        return tracker.rightButton == checkState;
+    case MouseButton::Middle:
+        return tracker.middleButton == checkState;
+    case MouseButton::x1:
+        return tracker.xButton1 == checkState;
+    case MouseButton::x2:
+        return tracker.xButton2 == checkState;
+    }
 }

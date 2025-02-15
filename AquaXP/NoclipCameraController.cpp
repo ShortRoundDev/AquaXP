@@ -20,7 +20,7 @@ NoclipCameraController::NoclipCameraController(
 
 void NoclipCameraController::update(Application& application, ICamera& camera, f32 dt)
 {
-    if (application.getKeyboard().IsKeyDown(Keys::W))
+    if (application.isActionDown(DefaultActions::Forward))
     {
         camera.move(camera.getLook() * 0.1f);
     }

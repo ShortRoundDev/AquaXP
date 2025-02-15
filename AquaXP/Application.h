@@ -10,6 +10,18 @@
 
 namespace AquaXP
 {
+
+    enum DefaultActions
+    {
+        Forward = 1,
+        Back = 2,
+        Left = 3,
+        Right = 4,
+        Action = 5
+    };
+
+    constexpr i32 BeginActions = 16;
+
     struct Window
     {
         bool m_status;
@@ -21,6 +33,14 @@ namespace AquaXP
         WCHAR const* m_title;
         bool m_vSync;
         bool m_enableTitlebar;
+    };
+
+    enum class AnalogInput
+    {
+        NONE,
+        Keyboard,
+        Mouse,
+        GamePad
     };
 
     enum class MouseButton
@@ -54,7 +74,7 @@ namespace AquaXP
 
         LeftThumbAxisUp,
         LeftThumbAxisDown,
-        LeftThumAxisRight,
+        LeftThumbAxisRight,
         LeftThumbAxisLeft,
 
         RightThumbUp,
@@ -74,6 +94,7 @@ namespace AquaXP
     >;
 
     constexpr sz g_maxActions = 256;
+    constexpr sz g_maxGamePads = 4;
 
     class Application
     {
@@ -119,12 +140,34 @@ namespace AquaXP
 
         AQUAXP_API Graphics& getGraphics();
         AQUAXP_API DirectX::Keyboard::State const& getKeyboard() const;
+        AQUAXP_API DirectX::Keyboard::KeyboardStateTracker const& getKeyboardTracker() const;
+
         AQUAXP_API DirectX::Mouse::State const& getMouse() const;
+        AQUAXP_API DirectX::Mouse::ButtonStateTracker const& getMouseStateTracker() const;
+
+        AQUAXP_API std::optional<DirectX::GamePad::State const&> tryGetGamepad(i32 player = 0) const;
+        AQUAXP_API std::optional<DirectX::GamePad::ButtonStateTracker const&> getGamepadStateTracker(i32 player = 0) const;
+
+        AQUAXP_API void setAnalogInputType(AnalogInput analogInput, i32 playerNum = 0);
+        AQUAXP_API AnalogInput getAnalogInputType(i32 playerNum = 0) const;
+
+        AQUAXP_API DirectX::XMVECTOR getAnalog1(i32 playerNum = 0);
+        AQUAXP_API DirectX::XMVECTOR getAnalog2(i32 playerNum = 0);
 
         AQUAXP_API bool isKeyDown(DirectX::Keyboard::Keys key) const;
         AQUAXP_API bool isKeyUp(DirectX::Keyboard::Keys key) const;
-        AQUAXP_API bool keyPressed(DirectX::Keyboard::Keys key) const;
-        AQUAXP_API bool keyReleased(DirectX::Keyboard::Keys key) const;
+        AQUAXP_API bool isKeyPressed(DirectX::Keyboard::Keys key) const;
+        AQUAXP_API bool isKeyReleased(DirectX::Keyboard::Keys key) const;
+
+        AQUAXP_API bool isGamePadButtonDown(GamePadButton key, i32 playerNum = 0) const;
+        AQUAXP_API bool isGamePadButtonUp(GamePadButton key, i32 playerNum = 0) const;
+        AQUAXP_API bool isGamePadButtonPressed(GamePadButton key, i32 playerNum = 0) const;
+        AQUAXP_API bool isGamePadButtonReleased(GamePadButton key, i32 playerNum = 0) const;
+
+        AQUAXP_API bool isMouseButtonDown(MouseButton button) const;
+        AQUAXP_API bool isMouseButtonUp(MouseButton button) const;
+        AQUAXP_API bool isMouseButtonPressed(MouseButton button) const;
+        AQUAXP_API bool isMouseButtonReleased(MouseButton button) const;
 
         AQUAXP_API bool tryPushCamera(std::shared_ptr<ICamera> camera);
         AQUAXP_API bool tryPushCameraController(std::shared_ptr<ICameraController> controller);
@@ -141,8 +184,13 @@ namespace AquaXP
         AQUAXP_API void setMouseMode(DirectX::Mouse::Mode mode);
         AQUAXP_API DirectX::Mouse::Mode getMouseMode() const;
 
-        AQUAXP_API bool tryBindAction(i32 action, DirectX::Keyboard::Keys key, i32& existingAction);
+        AQUAXP_API bool tryBindAction(i32 action, ActionBinding binding, i32& existingAction, bool force = false);
         AQUAXP_API void clearAction(i32 action);
+
+        AQUAXP_API bool isActionDown(i32 action, i32 playerNum = 0) const;
+        AQUAXP_API bool isActionUp(i32 action, i32 playerNum = 0) const;
+        AQUAXP_API bool isActionPressed(i32 action, i32 playerNum = 0) const;
+        AQUAXP_API bool isActionReleased(i32 action, i32 playerNum = 0) const;
 
     private:
         /* Settings */
@@ -161,20 +209,30 @@ namespace AquaXP
         DirectX::Keyboard m_keyboard;
         DirectX::Keyboard::State m_keyboardState;
         DirectX::Keyboard::KeyboardStateTracker m_keyboardStateTracker;
-        std::array<std::optional<DirectX::Keyboard::Keys>, g_maxActions> m_actionBindings;
+        std::array<std::optional<ActionBinding>, g_maxActions> m_actionBindings;
 
         DirectX::Mouse m_mouse;
         DirectX::Mouse::State m_mouseState;
+        DirectX::Mouse::ButtonStateTracker m_mouseButtonStateTracker;
+
+        DirectX::GamePad m_gamePad;
+        std::array<DirectX::GamePad::State, g_maxGamePads> m_gamePadState;
+        std::array<DirectX::GamePad::ButtonStateTracker, g_maxGamePads> m_buttonStateTracker;
+
+        std::array<std::pair<AnalogInput, AnalogInput>, g_maxGamePads> m_analogInputType;
 
         /* Cameras */
         std::stack<CameraContext> m_cameras;
 
         void updateMouse();
         void updateKeyboard();
+        void updateGamePad();
         void updateCamera(f32 dt);
 
-        std::optional<i32> findKeys(DirectX::Keyboard::Keys keys) const;
+        std::optional<i32> findKeys(ActionBinding binding) const;
 
+        bool gamePadButtonIsState(GamePadButton button, i32 playerNum, DirectX::GamePad::ButtonStateTracker::ButtonState checkState) const;
+        bool mouseButtonIsState(MouseButton button, DirectX::Mouse::ButtonStateTracker::ButtonState checkState) const;
     };
 }
 
