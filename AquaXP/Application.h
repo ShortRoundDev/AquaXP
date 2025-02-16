@@ -17,7 +17,11 @@ namespace AquaXP
         Back = 2,
         Left = 3,
         Right = 4,
-        Action = 5
+        Action = 5,
+        LookUp = 6,
+        LookDown = 7,
+        LookLeft = 8,
+        LookRight = 9
     };
 
     constexpr i32 BeginActions = 16;
@@ -35,7 +39,7 @@ namespace AquaXP
         bool m_enableTitlebar;
     };
 
-    enum class AnalogInput
+    enum class AxisInput
     {
         None,
         Keyboard,
@@ -145,12 +149,16 @@ namespace AquaXP
         AQUAXP_API DirectX::Mouse::State const& getMouse() const;
         AQUAXP_API DirectX::Mouse::ButtonStateTracker const& getMouseStateTracker() const;
 
-        AQUAXP_API std::optional<DirectX::GamePad::State const&> tryGetGamepad(i32 player = 0) const;
-        AQUAXP_API std::optional<DirectX::GamePad::ButtonStateTracker const&> getGamepadStateTracker(i32 player = 0) const;
+        AQUAXP_API std::optional<DirectX::GamePad::State> tryGetGamepad(i32 player = 0) const;
+        AQUAXP_API std::optional<DirectX::GamePad::ButtonStateTracker> getGamepadStateTracker(i32 player = 0) const;
 
-        AQUAXP_API void setAxisType(AnalogInput analogInput, i32 axis, i32 playerNum = 0);
-        AQUAXP_API AnalogInput getAxisType(i32 axis, i32 playerNum = 0) const;
+        AQUAXP_API void setAxisType(AxisInput axisInput, i32 axis, i32 playerNum = 0);
+
+        AQUAXP_API AxisInput getAxisType(i32 axis, i32 playerNum = 0) const;
         AQUAXP_API DirectX::XMVECTOR getAxis(i32 axis, i32 playerNum = 0) const;
+
+        AQUAXP_API DirectX::XMVECTOR getMove(i32 playerNum = 0, i32 axis = 0) const;
+        AQUAXP_API DirectX::XMVECTOR getLook(i32 playerNum = 0, i32 axis = 1) const;
 
         AQUAXP_API bool isKeyDown(DirectX::Keyboard::Keys key) const;
         AQUAXP_API bool isKeyUp(DirectX::Keyboard::Keys key) const;
@@ -182,13 +190,15 @@ namespace AquaXP
         AQUAXP_API void setMouseMode(DirectX::Mouse::Mode mode);
         AQUAXP_API DirectX::Mouse::Mode getMouseMode() const;
 
-        AQUAXP_API bool tryBindAction(i32 action, ActionBinding binding, i32& existingAction, bool force = false);
+        AQUAXP_API bool tryBindAction(i32 action, ActionBinding binding, bool force = false, i32* existingAction = nullptr);
         AQUAXP_API void clearAction(i32 action);
 
         AQUAXP_API bool isActionDown(i32 action, i32 playerNum = 0) const;
         AQUAXP_API bool isActionUp(i32 action, i32 playerNum = 0) const;
         AQUAXP_API bool isActionPressed(i32 action, i32 playerNum = 0) const;
         AQUAXP_API bool isActionReleased(i32 action, i32 playerNum = 0) const;
+
+        //AQUAXP_API bool loadSettings(ISettingsLoader const& loader);
 
     private:
         /* Settings */
@@ -207,7 +217,7 @@ namespace AquaXP
         DirectX::Keyboard m_keyboard;
         DirectX::Keyboard::State m_keyboardState;
         DirectX::Keyboard::KeyboardStateTracker m_keyboardStateTracker;
-        std::array<std::optional<ActionBinding>, g_maxActions> m_actionBindings;
+        std::array<ActionBinding, g_maxActions> m_actionBindings;
 
         DirectX::Mouse m_mouse;
         DirectX::Mouse::State m_mouseState;
@@ -217,7 +227,8 @@ namespace AquaXP
         std::array<DirectX::GamePad::State, g_maxGamePads> m_gamePadState;
         std::array<DirectX::GamePad::ButtonStateTracker, g_maxGamePads> m_buttonStateTracker;
 
-        std::array<std::pair<AnalogInput, AnalogInput>, g_maxGamePads> m_analogInputType;
+        std::array<std::pair<AxisInput, AxisInput>, g_maxGamePads> m_axisInputType;
+        std::array<f32, g_maxGamePads> m_sensitivity;
 
         /* Cameras */
         std::stack<CameraContext> m_cameras;

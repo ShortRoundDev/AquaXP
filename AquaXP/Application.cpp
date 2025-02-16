@@ -110,20 +110,23 @@ Application::Application(
     m_buttonStateTracker(),
 
     m_actionBindings(),
-    m_analogInputType()
+    m_axisInputType(),
+
+    m_sensitivity()
 {
-    m_analogInputType[0] = make_pair(AnalogInput::Keyboard, AnalogInput::Mouse);
+    m_axisInputType[0] = make_pair(AxisInput::Keyboard, AxisInput::Mouse);
+    m_sensitivity[0] = 0.005f;
     for (i32 i = 1; i < g_maxGamePads; i++)
     {
-        //TODO: COLLIN YOU WERE HERE
-        //m_analogInputType[i] = make_pair(AnalogInput::GamePad, AnalogInput::
+        m_axisInputType[i] = make_pair(AxisInput::GamePad, AxisInput::GamePad);
+        m_sensitivity[i] = 0.1f;
     }
     m_mouse.SetWindow(m_window.m_hwnd);
 }
 
 void Application::run(
-    std::function<void(Application*)> draw,
-    std::function<void(Application*, f32)> update
+    function<void(Application*)> draw,
+    function<void(Application*, f32)> update
 )
 {
     ShowWindow(m_window.m_hwnd, SW_SHOW);
@@ -301,7 +304,7 @@ DirectX::Mouse::ButtonStateTracker const& Application::getMouseStateTracker() co
     return m_mouseButtonStateTracker;
 }
 
-std::optional<DirectX::GamePad::State const&> Application::tryGetGamepad(i32 player = 0) const
+optional<DirectX::GamePad::State> Application::tryGetGamepad(i32 player) const
 {
     if (player < 0 || player >= g_maxGamePads)
     {
@@ -310,13 +313,204 @@ std::optional<DirectX::GamePad::State const&> Application::tryGetGamepad(i32 pla
     return make_optional(m_gamePadState[player]);
 }
 
-std::optional<DirectX::GamePad::ButtonStateTracker const&> Application::getGamepadStateTracker(i32 player = 0) const
+optional<DirectX::GamePad::ButtonStateTracker> Application::getGamepadStateTracker(i32 player) const
 {
     if (player < 0 || player >= g_maxGamePads)
     {
         return nullopt;
     }
     return make_optional(m_buttonStateTracker[player]);
+}
+
+void Application::setAxisType(AxisInput axisInput, i32 axis, i32 playerNum)
+{
+    if (playerNum < 0 || playerNum >= g_maxGamePads || (axis != 0 && axis != 1))
+    {
+        return;
+    }
+    auto current = m_axisInputType[playerNum];
+    if (axis == 0)
+    {
+        m_axisInputType[playerNum] = make_pair(
+            axisInput,
+            current.second
+        );
+    }
+    else
+    {
+        m_axisInputType[playerNum] = make_pair(
+            current.first,
+            axisInput
+        );
+    }
+}
+
+AxisInput Application::getAxisType(i32 axis, i32 playerNum) const
+{
+    if ((axis != 0 && axis != 1) || playerNum >= g_maxGamePads)
+    {
+        return AxisInput::None;
+    }
+    auto inputs = m_axisInputType[playerNum];
+    if (axis == 0)
+    {
+        return inputs.first;
+    }
+    else
+    {
+        return inputs.second;
+    }
+}
+
+DirectX::XMVECTOR Application::getAxis(i32 axis, i32 playerNum) const
+{
+    if (playerNum < 0 || playerNum >= g_maxGamePads || (axis != 0 && axis != 1))
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+    auto axisType = getAxisType(axis, playerNum);
+    switch (axisType)
+    {
+    case AxisInput::None:
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+    case AxisInput::Keyboard:
+    {
+        f32 x = 0, y = 0;
+        if (isActionDown(DefaultActions::Forward))
+        {
+            y += 1;
+        }
+        if (isActionDown(DefaultActions::Back))
+        {
+            y -= 1;
+        }
+        if (isActionDown(DefaultActions::Right))
+        {
+            x += 1;
+        }
+        if (isActionDown(DefaultActions::Left))
+        {
+            x -= 1;
+        }
+
+        return XMVectorSet(x, 0, y, 0);
+    }
+    case AxisInput::GamePad:
+    {
+        auto sticks = m_gamePadState[playerNum].thumbSticks;
+        return XMVectorSet(
+            axis == 0 ? sticks.leftX : sticks.rightX,
+            0,
+            axis == 0 ? sticks.leftY : sticks.rightY,
+            0
+        );
+    }
+    case AxisInput::Mouse:
+    {
+        return XMVectorSet(
+            static_cast<f32>(m_mouseState.x),
+            0,
+            static_cast<f32>(m_mouseState.y),
+            0
+        );
+    }
+    default:
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+    }
+}
+
+DirectX::XMVECTOR Application::getMove(i32 playerNum, i32 axis) const
+{
+    if (playerNum < 0 || playerNum >= g_maxGamePads || (axis != 0 && axis != 1))
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+
+    auto vector = getAxis(axis, playerNum);
+    auto axisType = getAxisType(axis, playerNum);
+    auto sensitivity = m_sensitivity[playerNum];
+    switch (axisType)
+    {
+    case AxisInput::None:
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+    case AxisInput::Keyboard:
+    {
+        return XMVector3Normalize(vector);
+    }
+    case AxisInput::GamePad:
+    {
+        return XMVector3ClampLength(vector, 0, sensitivity) / sensitivity;
+    }
+    case AxisInput::Mouse:
+    {
+        auto adjustedSensitivity = sensitivity / 100.0f;
+        return XMVector3ClampLength(XMVectorMultiply(vector, XMVectorSet(1, 0, -1, 0)), 0, adjustedSensitivity) / adjustedSensitivity;
+    }
+    }
+    return XMVectorSet(0, 0, 0, 0);
+}
+
+DirectX::XMVECTOR Application::getLook(i32 playerNum, i32 axis) const
+{
+    if (playerNum < 0 || playerNum >= g_maxGamePads || (axis != 0 && axis != 1))
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+
+    auto axisType = getAxisType(axis, playerNum);
+    auto sensitivity = m_sensitivity[playerNum];
+
+    switch (axisType)
+    {
+    case AxisInput::None:
+    {
+        return XMVectorSet(0, 0, 0, 0);
+    }
+    case AxisInput::Keyboard:
+    {
+        f32 yaw = 0, pitch = 0;
+        if (axis == 1)
+        {
+            if (isActionDown(DefaultActions::LookUp, playerNum))
+            {
+                pitch -= sensitivity;
+            }
+            if (isActionDown(DefaultActions::LookDown, playerNum))
+            {
+                pitch += sensitivity;
+            }
+            if (isActionDown(DefaultActions::LookRight, playerNum))
+            {
+                yaw += sensitivity;
+            }
+            if (isActionDown(DefaultActions::LookLeft, playerNum))
+            {
+                yaw -= sensitivity;
+            }
+            return XMVectorSet(yaw, 0, pitch, 0);
+        }
+        else
+        {
+            return getAxis(axis, playerNum) * sensitivity; // getAxis() returns a range of -1, 1 for keyboard, so multiply by sensitivity to get the same range
+        }
+    }
+    case AxisInput::GamePad:
+    {
+        return XMVector3ClampLength(getAxis(axis, playerNum), 0, sensitivity) / sensitivity;
+    }
+    case AxisInput::Mouse:
+    {
+        return getAxis(axis, playerNum) * sensitivity;
+    }
+    }
+    return XMVectorSet(0, 0, 0, 0);
+
 }
 
 bool Application::isKeyDown(DirectX::Keyboard::Keys key) const
@@ -338,12 +532,12 @@ bool Application::isKeyReleased(DirectX::Keyboard::Keys key) const
     return m_keyboardStateTracker.IsKeyReleased(key);
 }
 
-bool Application::isGamePadButtonDown(GamePadButton button, i32 playerNum = 0) const
+bool Application::isGamePadButtonDown(GamePadButton button, i32 playerNum) const
 {
     return gamePadButtonIsState(button, playerNum, GamePad::ButtonStateTracker::ButtonState::HELD);
 }
 
-bool Application::isGamePadButtonUp(GamePadButton button, i32 playerNum = 0) const
+bool Application::isGamePadButtonUp(GamePadButton button, i32 playerNum) const
 {
     return gamePadButtonIsState(button, playerNum, GamePad::ButtonStateTracker::ButtonState::UP);
 }
@@ -378,7 +572,7 @@ bool Application::isMouseButtonReleased(MouseButton button) const
     return mouseButtonIsState(button, Mouse::ButtonStateTracker::ButtonState::RELEASED);
 }
 
-bool Application::tryPushCamera(std::shared_ptr<ICamera> camera)
+bool Application::tryPushCamera(shared_ptr<ICamera> camera)
 {
     if (m_cameras.size() == 0)
     {
@@ -390,7 +584,7 @@ bool Application::tryPushCamera(std::shared_ptr<ICamera> camera)
     return true;
 }
 
-bool Application::tryPushCameraController(std::shared_ptr<ICameraController> controller)
+bool Application::tryPushCameraController(shared_ptr<ICameraController> controller)
 {
     if (m_cameras.size() == 0)
     {
@@ -403,8 +597,8 @@ bool Application::tryPushCameraController(std::shared_ptr<ICameraController> con
 }
 
 void Application::pushCameraContext(
-    std::shared_ptr<ICameraController> cameraController,
-    std::shared_ptr<ICamera> camera
+    shared_ptr<ICameraController> cameraController,
+    shared_ptr<ICamera> camera
 )
 {
     m_cameras.push(CameraContext(
@@ -450,16 +644,33 @@ Mouse::Mode Application::getMouseMode() const
     return m_mouse.GetState().positionMode;
 }
 
-std::optional<i32> Application::findKeys(ActionBinding binding) const
+optional<i32> Application::findKeys(ActionBinding binding) const
 {
     for (i32 i = 0; i < g_maxActions; i++)
     {
         auto action = m_actionBindings[i];
-        if (!action.has_value())
+        if (auto const* key = get_if<Keyboard::Keys>(&action))
         {
-            continue;
+            /* Keyboard::Keys::None is the universal "none" */
+            if (*key == Keyboard::Keys::None) {
+                return nullopt;
+            }
         }
-        if(action.value() == binding)
+        else if (auto const* button = get_if<GamePadButton>(&action))
+        {
+            if (*button == GamePadButton::None)
+            {
+                return nullopt;
+            }
+        }
+        else if (auto const* mouse = get_if<MouseButton>(&action))
+        {
+            if (*mouse == MouseButton::None)
+            {
+                return nullopt;
+            }
+        }
+        else if(action == binding)
         {
             return i;
         }
@@ -467,7 +678,7 @@ std::optional<i32> Application::findKeys(ActionBinding binding) const
     return nullopt;
 }
 
-bool Application::tryBindAction(i32 action, ActionBinding binding, i32& existingAction, bool force)
+bool Application::tryBindAction(i32 action, ActionBinding binding, bool force, i32* existingAction)
 {
     if (action >= g_maxActions || action < 0)
     {
@@ -482,12 +693,16 @@ bool Application::tryBindAction(i32 action, ActionBinding binding, i32& existing
         }
         else
         {
-            existingAction = existing.value();
+            if (existingAction != nullptr)
+            {
+                *existingAction = existing.value();
+            }
             return false;
         }
     }
 
     m_actionBindings[action] = binding;
+    return true;
 }
 
 void Application::clearAction(i32 action)
@@ -496,7 +711,7 @@ void Application::clearAction(i32 action)
     {
         return;
     }
-    m_actionBindings[action] = nullopt;
+    m_actionBindings[action] = Keyboard::None;
 }
 
 bool Application::isActionDown(i32 action, i32 playerNum) const
@@ -506,10 +721,6 @@ bool Application::isActionDown(i32 action, i32 playerNum) const
         return false;
     }
     auto actionBinding = m_actionBindings[action];
-    if (!actionBinding.has_value())
-    {
-        return false;
-    }
     return visit(
         overloaded
         {
@@ -526,7 +737,7 @@ bool Application::isActionDown(i32 action, i32 playerNum) const
                 return isMouseButtonDown(button);
             },
         },
-        actionBinding.value()
+        actionBinding
     );
 }
 
@@ -537,10 +748,6 @@ bool Application::isActionUp(i32 action, i32 playerNum) const
         return false;
     }
     auto actionBinding = m_actionBindings[action];
-    if (!actionBinding.has_value())
-    {
-        return false;
-    }
     return visit(
         overloaded
         {
@@ -557,7 +764,7 @@ bool Application::isActionUp(i32 action, i32 playerNum) const
                 return isMouseButtonUp(button);
             },
         },
-        actionBinding.value()
+        actionBinding
     );
 }
 
@@ -568,10 +775,6 @@ bool Application::isActionPressed(i32 action, i32 playerNum) const
         return false;
     }
     auto actionBinding = m_actionBindings[action];
-    if (!actionBinding.has_value())
-    {
-        return false;
-    }
     return visit(
         overloaded
         {
@@ -588,7 +791,7 @@ bool Application::isActionPressed(i32 action, i32 playerNum) const
                 return isMouseButtonPressed(button);
             }
         },
-        actionBinding.value()
+        actionBinding
     );
 }
 
@@ -599,10 +802,6 @@ bool Application::isActionReleased(i32 action, i32 playerNum) const
         return false;
     }
     auto actionBinding = m_actionBindings[action];
-    if (!actionBinding.has_value())
-    {
-        return false;
-    }
     return visit(
         overloaded
         {
@@ -619,7 +818,7 @@ bool Application::isActionReleased(i32 action, i32 playerNum) const
                 return isMouseButtonReleased(button);
             },
         },
-        actionBinding.value()
+        actionBinding
     );
 }
 
@@ -663,7 +862,7 @@ bool Application::gamePadButtonIsState(GamePadButton button, i32 playerNum, Game
     }
 
     GamePad::ButtonStateTracker const& tracker = m_buttonStateTracker[playerNum];
-    GamePad::ButtonStateTracker::ButtonState state;
+    GamePad::ButtonStateTracker::ButtonState state = static_cast<GamePad::ButtonStateTracker::ButtonState>(0xffffffff); // invalid state, returns false by default. This is just to clear a warning from MSVC
     switch (button)
     {
     case GamePadButton::None:
@@ -741,6 +940,10 @@ bool Application::gamePadButtonIsState(GamePadButton button, i32 playerNum, Game
     case GamePadButton::TriggerRight:
         state = tracker.rightTrigger;
         break;
+    default:
+    {
+        return false;
+    }
     }
     return state == checkState;
 }
@@ -763,4 +966,5 @@ bool Application::mouseButtonIsState(MouseButton button, Mouse::ButtonStateTrack
     case MouseButton::x2:
         return tracker.xButton2 == checkState;
     }
+    return false;
 }

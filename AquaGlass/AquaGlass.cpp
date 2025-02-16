@@ -25,13 +25,21 @@ struct Model
     XMMATRIX model;
 };
 
-AQUA_REGISTER(FORWARD)
-AQUA_REGISTER(BACK)
-
 int main()
 {
     /* Initialize Window and DirectX infrastructure */
     Application app(800, 600, L"AquaGlass", false, false, false, true);
+
+    app.tryBindAction(DefaultActions::Forward, Keyboard::Keys::W);
+    app.tryBindAction(DefaultActions::Back, Keyboard::Keys::S);
+    app.tryBindAction(DefaultActions::Left, Keyboard::Keys::A);
+    app.tryBindAction(DefaultActions::Right, Keyboard::Keys::D);
+
+    app.tryBindAction(DefaultActions::LookUp, Keyboard::Keys::Up);
+    app.tryBindAction(DefaultActions::LookLeft, Keyboard::Keys::Left);
+    app.tryBindAction(DefaultActions::LookRight, Keyboard::Keys::Right);
+    app.tryBindAction(DefaultActions::LookDown, Keyboard::Keys::Down);
+
     CameraContext cameraContext(
         make_shared<NoclipCameraController>(),
         make_shared<ICameraTemplate<CameraBuffer>>(
@@ -89,43 +97,43 @@ int main()
     /* Time accumulator for rotation */
     f32 time = 0.0f;
 
-    //Assimp::Importer importer;
-    //const aiScene* scene = importer.ReadFile("Assets/Platform.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
-    //std::vector<UINT> indices;
-    //std::vector<Vertex> vertices;
-    //unique_ptr<Texture> texture;
-    //for (u32 i = 1; i < scene->mNumMeshes; i++)
-    //{
-    //    auto mesh = scene->mMeshes[i];
-    //    for (u32 j = 0; j < mesh->mNumVertices; j++)
-    //    {
-    //        auto pos = mesh->mVertices[j];
-    //        auto tex = mesh->mTextureCoords[0][j];
-    //        auto normal = mesh->mNormals[j];
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile("Assets/Platform.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
+    std::vector<UINT> indices;
+    std::vector<Vertex> vertices;
+    unique_ptr<Texture> texture;
+    for (u32 i = 1; i < scene->mNumMeshes; i++)
+    {
+        auto mesh = scene->mMeshes[i];
+        for (u32 j = 0; j < mesh->mNumVertices; j++)
+        {
+            auto pos = mesh->mVertices[j];
+            auto tex = mesh->mTextureCoords[0][j];
+            auto normal = mesh->mNormals[j];
 
-    //        vertices.push_back({
-    //            .pos = XMFLOAT3(pos.x, pos.y, pos.z),
-    //            .color = XMFLOAT4(0, 0, 0, 0),
-    //            .normal = XMFLOAT3(normal.x, normal.y, normal.z),
-    //            .uv = XMFLOAT2(tex.x, tex.y),
-    //        });
-    //    }
-    //    for (u32 j = 0; j < mesh->mNumFaces; j++)
-    //    {
-    //        auto face = mesh->mFaces[j];
-    //        for (u32 k = 0; k < face.mNumIndices; k++)
-    //        {
-    //            indices.push_back(face.mIndices[k]);
-    //        }
-    //    }
-    //    auto material = scene->mMaterials[mesh->mMaterialIndex];
-    //    aiString texturePath;
-    //    if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
-    //    {
-    //        texture = make_unique<Texture>(graphics, "Assets/" + string(texturePath.C_Str()));
-    //        texture->use(context);
-    //    }
-    //}
+            vertices.push_back({
+                .pos = XMFLOAT3(pos.x, pos.y, pos.z),
+                .color = XMFLOAT4(0, 0, 0, 0),
+                .normal = XMFLOAT3(normal.x, normal.y, normal.z),
+                .uv = XMFLOAT2(tex.x, tex.y),
+            });
+        }
+        for (u32 j = 0; j < mesh->mNumFaces; j++)
+        {
+            auto face = mesh->mFaces[j];
+            for (u32 k = 0; k < face.mNumIndices; k++)
+            {
+                indices.push_back(face.mIndices[k]);
+            }
+        }
+        auto material = scene->mMaterials[mesh->mMaterialIndex];
+        aiString texturePath;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
+        {
+            texture = make_unique<Texture>(graphics, "Assets/" + string(texturePath.C_Str()));
+            texture->use(context);
+        }
+    }
     auto c = XMVectorSet(0, 0, 0, 0);
     auto max = XMVectorSet(100, 100, 100, 0);
 
@@ -140,12 +148,12 @@ int main()
     node.tryQuery(AABB(c, max), aabb);
 
     /* Simple textured triangle */
-    //Mesh<Vertex> mesh(
-    //    device,
-    //    vertices,
-    //    indices
-    //);
-    //mesh.use(context);
+    Mesh<Vertex> mesh(
+        device,
+        vertices,
+        indices
+    );
+    mesh.use(context);
 
     static f32 color[4] = { 0.6f, 0.6f, 1.0f, 1.0f };
     app.run(
@@ -157,7 +165,7 @@ int main()
             graphics.getBackBuffer()->clear(graphics, color);
             graphics.getDepthBuffer()->clearDepth(graphics);
 
-            //mesh.useAndDraw(context);
+            mesh.useAndDraw(context);
             graphics.present();
         },
         [&](Application* appl, f32 dt)

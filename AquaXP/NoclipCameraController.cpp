@@ -20,16 +20,18 @@ NoclipCameraController::NoclipCameraController(
 
 void NoclipCameraController::update(Application& application, ICamera& camera, f32 dt)
 {
-    if (application.isActionDown(DefaultActions::Forward))
-    {
-        camera.move(camera.getLook() * 0.1f);
-    }
+    camera.move(
+        XMVector3Rotate(application.getMove() * 0.5f, camera.getRotation())
+    );
 
-    f32 yaw = static_cast<f32>(application.getMouse().x) * 0.01f,
-        pitch = static_cast<f32>(application.getMouse().y) * 0.01f;
+    auto look = application.getLook();
+
+    f32 yaw = XMVectorGetX(look),
+        pitch = XMVectorGetZ(look);
 
     m_yaw += yaw;
     m_pitch += pitch;
+
     f32 fpi = static_cast<f32>(pi);
     if (m_pitch >= fpi/2.0f)
     {

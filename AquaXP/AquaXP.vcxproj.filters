@@ -150,6 +150,9 @@
     <ClInclude Include="RegisterAction.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="ISettingsLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -196,6 +199,9 @@
     </ClCompile>
     <ClCompile Include="Sampler.cpp">
       <Filter>Header Files\API</Filter>
+    </ClCompile>
+    <ClCompile Include="ISettingsLoader.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@
 #include <functional>
 #include <set>
 #include <variant>
+#include <array>
 
 #include "framework.h"
 
