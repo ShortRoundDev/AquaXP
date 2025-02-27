@@ -26,4 +26,9 @@ namespace AquaXP
         return DirectX::XMVectorSetW(q, 1 + DirectX::XMVectorGetX(DirectX::XMVector3Dot(s_baseForward, look)));
 
     }
+
+    inline f32 Clampf(f32 t, f32 min, f32 max)
+    {
+        return fmin(t, fmax(t, min));
+    }
 };

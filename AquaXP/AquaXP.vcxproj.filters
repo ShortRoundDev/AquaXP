@@ -153,6 +153,12 @@
     <ClInclude Include="ISettingsLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Capsule.h">
+      <Filter>Header Files\Helpers\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionHelpers.h">
+      <Filter>Header Files\Helpers\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -202,6 +208,12 @@
     </ClCompile>
     <ClCompile Include="ISettingsLoader.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Capsule.cpp">
+      <Filter>Source Files\Helpers\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionHelpers.cpp">
+      <Filter>Source Files\Helpers\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

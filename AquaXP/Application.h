@@ -198,6 +198,9 @@ namespace AquaXP
         AQUAXP_API bool isActionPressed(i32 action, i32 playerNum = 0) const;
         AQUAXP_API bool isActionReleased(i32 action, i32 playerNum = 0) const;
 
+        AQUAXP_API void setAxisSensitivity(f32 sensitivity, i32 axis, i32 playerNum = 0);
+        AQUAXP_API f32 getAxisSensitivity(i32 axis, i32 playerNum = 0);
+
         //AQUAXP_API bool loadSettings(ISettingsLoader const& loader);
 
     private:
@@ -228,7 +231,7 @@ namespace AquaXP
         std::array<DirectX::GamePad::ButtonStateTracker, g_maxGamePads> m_buttonStateTracker;
 
         std::array<std::pair<AxisInput, AxisInput>, g_maxGamePads> m_axisInputType;
-        std::array<f32, g_maxGamePads> m_sensitivity;
+        std::array<std::pair<f32, f32>, g_maxGamePads> m_sensitivity;
 
         /* Cameras */
         std::stack<CameraContext> m_cameras;

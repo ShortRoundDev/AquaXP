@@ -115,11 +115,11 @@ Application::Application(
     m_sensitivity()
 {
     m_axisInputType[0] = make_pair(AxisInput::Keyboard, AxisInput::Mouse);
-    m_sensitivity[0] = 0.005f;
+    m_sensitivity[0] = make_pair(0.5f, 0.005f);
     for (i32 i = 1; i < g_maxGamePads; i++)
     {
         m_axisInputType[i] = make_pair(AxisInput::GamePad, AxisInput::GamePad);
-        m_sensitivity[i] = 0.1f;
+        m_sensitivity[i] = make_pair(1.0f, 0.5f);
     }
     m_mouse.SetWindow(m_window.m_hwnd);
 }
@@ -432,7 +432,9 @@ DirectX::XMVECTOR Application::getMove(i32 playerNum, i32 axis) const
 
     auto vector = getAxis(axis, playerNum);
     auto axisType = getAxisType(axis, playerNum);
-    auto sensitivity = m_sensitivity[playerNum];
+    auto sensitivity = axis == 0
+        ? m_sensitivity[playerNum].first
+        : m_sensitivity[playerNum].second;
     switch (axisType)
     {
     case AxisInput::None:
@@ -464,7 +466,10 @@ DirectX::XMVECTOR Application::getLook(i32 playerNum, i32 axis) const
     }
 
     auto axisType = getAxisType(axis, playerNum);
-    auto sensitivity = m_sensitivity[playerNum];
+
+    auto sensitivity = axis == 0
+        ? m_sensitivity[playerNum].first
+        : m_sensitivity[playerNum].second;
 
     switch (axisType)
     {
@@ -820,6 +825,41 @@ bool Application::isActionReleased(i32 action, i32 playerNum) const
         },
         actionBinding
     );
+}
+
+void Application::setAxisSensitivity(f32 sensitivity, i32 axis, i32 playerNum = 0)
+{
+    if (playerNum < 0 || playerNum > g_maxGamePads || (axis != 0 && axis != 1))
+    {
+        return;
+    }
+    auto current = m_sensitivity[playerNum];
+    if (axis == 0)
+    {
+        m_sensitivity[playerNum] = make_pair(
+            sensitivity,
+            current.second
+        );
+    }
+    else
+    {
+        m_sensitivity[playerNum] = make_pair(
+            current.first,
+            sensitivity
+        );
+    }
+}
+
+f32 Application::getAxisSensitivity(i32 axis, i32 playerNum = 0)
+{
+    if (playerNum < 0 || playerNum > g_maxGamePads || (axis != 0 && axis != 1))
+    {
+        return -1.0f;
+    }
+    return axis == 0
+        ? m_sensitivity[playerNum].first
+        : m_sensitivity[playerNum].second;
+
 }
 
 void Application::updateMouse()

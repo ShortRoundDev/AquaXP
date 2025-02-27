@@ -37,5 +37,6 @@
 #include "Types.h"
 #include "Slots.h"
 #include "Concepts.h"
+#include "MathHelpers.h"
 
 #endif //PCH_H
