@@ -34,3 +34,4 @@
 #include "OctreeNode.h"
 
 #include "RegisterAction.h"
+#include "CollisionHelpers.h"

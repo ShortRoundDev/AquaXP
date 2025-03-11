@@ -25,6 +25,58 @@ struct Model
     XMMATRIX model;
 };
 
+optional<pair<shared_ptr<Mesh<Vertex>>, shared_ptr<Texture>>> loadMesh(Graphics const& graphics, ID3D11Device *device, ID3D11DeviceContext *context, string const& name)
+{
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(name, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
+    if (scene == nullptr)
+    {
+        return nullopt;
+    }
+    std::vector<UINT> indices;
+    std::vector<Vertex> vertices;
+    shared_ptr<Texture> texture;
+    for (u32 i = 0; i < scene->mNumMeshes; i++)
+    {
+        auto mesh = scene->mMeshes[i];
+        for (u32 j = 0; j < mesh->mNumVertices; j++)
+        {
+            auto pos = mesh->mVertices[j];
+            auto tex = mesh->mTextureCoords[0][j];
+            auto normal = mesh->mNormals[j];
+
+            vertices.push_back({
+                .pos = XMFLOAT3(pos.x, pos.y, pos.z),
+                .color = XMFLOAT4(0, 0, 0, 0),
+                .normal = XMFLOAT3(normal.x, normal.y, normal.z),
+                .uv = XMFLOAT2(tex.x, tex.y),
+                });
+        }
+        for (u32 j = 0; j < mesh->mNumFaces; j++)
+        {
+            auto face = mesh->mFaces[j];
+            for (u32 k = 0; k < face.mNumIndices; k++)
+            {
+                indices.push_back(face.mIndices[k]);
+            }
+        }
+        auto material = scene->mMaterials[mesh->mMaterialIndex];
+        aiString texturePath;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
+        {
+            texture = make_shared<Texture>(graphics, "Assets/" + string(texturePath.C_Str()));
+        }
+    }
+    return make_pair(
+        make_shared<Mesh<Vertex>>(
+            device,
+            vertices,
+            indices
+        ),
+        texture
+    );
+}
+
 int main()
 {
     /* Initialize Window and DirectX infrastructure */
@@ -93,47 +145,10 @@ int main()
         .model = XMMatrixTranspose(modelTransform)
     });
     model.bind(context, 1);
-
     /* Time accumulator for rotation */
     f32 time = 0.0f;
 
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile("Assets/Platform.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
-    std::vector<UINT> indices;
-    std::vector<Vertex> vertices;
-    unique_ptr<Texture> texture;
-    for (u32 i = 1; i < scene->mNumMeshes; i++)
-    {
-        auto mesh = scene->mMeshes[i];
-        for (u32 j = 0; j < mesh->mNumVertices; j++)
-        {
-            auto pos = mesh->mVertices[j];
-            auto tex = mesh->mTextureCoords[0][j];
-            auto normal = mesh->mNormals[j];
 
-            vertices.push_back({
-                .pos = XMFLOAT3(pos.x, pos.y, pos.z),
-                .color = XMFLOAT4(0, 0, 0, 0),
-                .normal = XMFLOAT3(normal.x, normal.y, normal.z),
-                .uv = XMFLOAT2(tex.x, tex.y),
-            });
-        }
-        for (u32 j = 0; j < mesh->mNumFaces; j++)
-        {
-            auto face = mesh->mFaces[j];
-            for (u32 k = 0; k < face.mNumIndices; k++)
-            {
-                indices.push_back(face.mIndices[k]);
-            }
-        }
-        auto material = scene->mMaterials[mesh->mMaterialIndex];
-        aiString texturePath;
-        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
-        {
-            texture = make_unique<Texture>(graphics, "Assets/" + string(texturePath.C_Str()));
-            texture->use(context);
-        }
-    }
     auto c = XMVectorSet(0, 0, 0, 0);
     auto max = XMVectorSet(100, 100, 100, 0);
 
@@ -148,29 +163,73 @@ int main()
     node.tryQuery(AABB(c, max), aabb);
 
     /* Simple textured triangle */
-    Mesh<Vertex> mesh(
-        device,
-        vertices,
-        indices
-    );
-    mesh.use(context);
+    auto cowBall = loadMesh(graphics, device, context, "Assets/cowball.obj");
+    auto wall = loadMesh(graphics, device, context, "Assets/wall.obj");
+
+    if (!cowBall.has_value() || !wall.has_value())
+    {
+        return -1;
+    }
 
     static f32 color[4] = { 0.6f, 0.6f, 1.0f, 1.0f };
+
+    auto move = XMVectorSet(0.0f, 0, 0.02f, 0.0f);
+    auto position = XMVectorSet(0.0f, 0, -6.0f, 0.0f);
+
+    auto
+        v0 = XMVectorSet(3.00000000f, -2.12132001f, -0.121320002f, 0.0f),
+        v1 = XMVectorSet(-3.00000000f, -2.12132001f, -0.121320002, 0.0f),
+        v2 = XMVectorSet(0.00000000f, 2.12132001f, 4.12132120f, 0.0f);
+
+    auto n = XMVector3Normalize(
+        XMVector3Cross(v1 - v0, v2 - v0)
+    );
+
     app.run(
         [&](Application* appl)
         {
             matrices.setData(cameraContext.m_camera->getCameraBuffer());
             matrices.bind(context, 0);
-            //graphics->resetRenderTarget();
+
             graphics.getBackBuffer()->clear(graphics, color);
             graphics.getDepthBuffer()->clearDepth(graphics);
 
-            mesh.useAndDraw(context);
+            model.setData({
+                .model = XMMatrixTranspose(XMMatrixTranslation(
+                    XMVectorGetX(position),
+                    XMVectorGetY(position),
+                    XMVectorGetZ(position)
+                ))
+            });
+            model.bind(context, 1);
+
+            get<1>(cowBall.value())->use(context);
+            get<0>(cowBall.value())->useAndDraw(context);
+
+            model.setData({
+                .model = XMMatrixTranspose(XMMatrixIdentity()) // no transform for wall
+            });
+            model.bind(context, 1);
+
+            get<1>(wall.value())->use(context);
+            get<0>(wall.value())->useAndDraw(context);
             graphics.present();
         },
         [&](Application* appl, f32 dt)
         {
             time += dt;
+
+            position = CollideSphereTriangle(
+                position,
+                1.0f,
+                move,
+                v0,
+                v1,
+                v2,
+                n
+            );
+            //position = CollideSphereTriangle(move * (dt / 100000.0f);
+
         }
     );
 }

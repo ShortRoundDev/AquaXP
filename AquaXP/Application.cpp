@@ -827,7 +827,7 @@ bool Application::isActionReleased(i32 action, i32 playerNum) const
     );
 }
 
-void Application::setAxisSensitivity(f32 sensitivity, i32 axis, i32 playerNum = 0)
+void Application::setAxisSensitivity(f32 sensitivity, i32 axis, i32 playerNum)
 {
     if (playerNum < 0 || playerNum > g_maxGamePads || (axis != 0 && axis != 1))
     {
@@ -850,7 +850,7 @@ void Application::setAxisSensitivity(f32 sensitivity, i32 axis, i32 playerNum = 
     }
 }
 
-f32 Application::getAxisSensitivity(i32 axis, i32 playerNum = 0)
+f32 Application::getAxisSensitivity(i32 axis, i32 playerNum)
 {
     if (playerNum < 0 || playerNum > g_maxGamePads || (axis != 0 && axis != 1))
     {
