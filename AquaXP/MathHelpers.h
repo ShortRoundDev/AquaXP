@@ -29,6 +29,6 @@ namespace AquaXP
 
     inline f32 Clampf(f32 t, f32 min, f32 max)
     {
-        return fmin(t, fmax(t, min));
+        return fmin(max, fmax(t, min));
     }
 };

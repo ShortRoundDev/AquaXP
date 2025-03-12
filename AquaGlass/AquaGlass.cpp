@@ -77,6 +77,12 @@ optional<pair<shared_ptr<Mesh<Vertex>>, shared_ptr<Texture>>> loadMesh(Graphics 
     );
 }
 
+template<typename T>
+using SomeAlloc = std::allocator<T>;
+
+template<typename T>
+using MyVector = std::vector<T, SomeAlloc<T>>;
+
 int main()
 {
     /* Initialize Window and DirectX infrastructure */
@@ -115,13 +121,42 @@ int main()
     auto device = graphics.getDevice().Get();
     auto context = graphics.getContext().Get();
 
+
     /* Build the Vertex Input Layot with default data formats*/
-    InputLayoutBuilder layoutBuilder;
+    InputLayoutBuilder<MyVector> layoutBuilder;
     layoutBuilder
-        .addPosition()
-        .addColor()
-        .addNormal()
-        .addTexCoord();
+        .addPosition(
+            0U,
+            DXGI_FORMAT_R32G32B32_FLOAT,
+            0U,
+            nullopt,
+            D3D11_INPUT_PER_VERTEX_DATA,
+            0U
+        )
+        .addColor(
+            0U,
+            DXGI_FORMAT_R32G32B32A32_FLOAT,
+            0U,
+            nullopt,
+            D3D11_INPUT_PER_VERTEX_DATA,
+            0U
+        )
+        .addNormal(
+            0U,
+            DXGI_FORMAT_R32G32B32_FLOAT,
+            0U,
+            nullopt,
+            D3D11_INPUT_PER_VERTEX_DATA,
+            0U
+        )
+        .addTexCoord(
+            0U,
+            DXGI_FORMAT_R32G32_FLOAT,
+            0U,
+            nullopt,
+            D3D11_INPUT_PER_VERTEX_DATA,
+            0U
+        );
 
     /* Load Shaders from precompiled CSO files. Vertex Shaders require the input layout */
     VertexShader vs(device, L"WorldVertex.cso", layoutBuilder.build());
@@ -173,8 +208,8 @@ int main()
 
     static f32 color[4] = { 0.6f, 0.6f, 1.0f, 1.0f };
 
-    auto move = XMVectorSet(0.0f, 0, 0.02f, 0.0f);
-    auto position = XMVectorSet(0.0f, 0, -6.0f, 0.0f);
+    auto move = XMVectorSet(0, 0, -0.02f, 0.0f);
+    auto position = XMVectorSet(0.0f, 0, 6.0f, 0.0f);
 
     auto
         v0 = XMVectorSet(3.00000000f, -2.12132001f, -0.121320002f, 0.0f),
