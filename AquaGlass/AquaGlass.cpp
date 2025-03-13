@@ -88,19 +88,17 @@ int main()
     /* Initialize Window and DirectX infrastructure */
     Application app(800, 600, L"AquaGlass", false, false, false, true);
 
+    /* Bind keys to actions */
     app.tryBindAction(DefaultActions::Forward, Keyboard::Keys::W);
     app.tryBindAction(DefaultActions::Back, Keyboard::Keys::S);
     app.tryBindAction(DefaultActions::Left, Keyboard::Keys::A);
     app.tryBindAction(DefaultActions::Right, Keyboard::Keys::D);
 
-    app.tryBindAction(DefaultActions::LookUp, Keyboard::Keys::Up);
-    app.tryBindAction(DefaultActions::LookLeft, Keyboard::Keys::Left);
-    app.tryBindAction(DefaultActions::LookRight, Keyboard::Keys::Right);
-    app.tryBindAction(DefaultActions::LookDown, Keyboard::Keys::Down);
-
+    /* Camera context joins the rendering parameters of a camera (its matrices)
+     * with the control logic of a camera */
     CameraContext cameraContext(
-        make_shared<NoclipCameraController>(),
-        make_shared<ICameraTemplate<CameraBuffer>>(
+        make_shared<NoclipCameraController>(),  /* Simply WAS camera controller */
+        make_shared<ICameraTemplate<CameraBuffer>>(  /* Simple perspective projection */
             ProjectionType::Perspective,
             XMVectorSet(0.0f, 8.0f, -16.0f, 0),
             LookAtToQuaternion(
@@ -114,49 +112,24 @@ int main()
         )
     );
 
+    /* Camera Contexts are a stack so you can swap between contexts as needed */
     app.pushCameraContext(cameraContext);
+
+    /* Mouse look on */
     app.setMouseMode(Mouse::Mode::MODE_RELATIVE);
+
     /* Graphics object contains the DX11 context and device objects */
     auto& graphics = app.getGraphics();
     auto device = graphics.getDevice().Get();
     auto context = graphics.getContext().Get();
 
-
     /* Build the Vertex Input Layot with default data formats*/
     InputLayoutBuilder<MyVector> layoutBuilder;
     layoutBuilder
-        .addPosition(
-            0U,
-            DXGI_FORMAT_R32G32B32_FLOAT,
-            0U,
-            nullopt,
-            D3D11_INPUT_PER_VERTEX_DATA,
-            0U
-        )
-        .addColor(
-            0U,
-            DXGI_FORMAT_R32G32B32A32_FLOAT,
-            0U,
-            nullopt,
-            D3D11_INPUT_PER_VERTEX_DATA,
-            0U
-        )
-        .addNormal(
-            0U,
-            DXGI_FORMAT_R32G32B32_FLOAT,
-            0U,
-            nullopt,
-            D3D11_INPUT_PER_VERTEX_DATA,
-            0U
-        )
-        .addTexCoord(
-            0U,
-            DXGI_FORMAT_R32G32_FLOAT,
-            0U,
-            nullopt,
-            D3D11_INPUT_PER_VERTEX_DATA,
-            0U
-        );
+        .addPosition()
+        .addColor()
+        .addNormal()
+        .addTexCoord();
 
     /* Load Shaders from precompiled CSO files. Vertex Shaders require the input layout */
     VertexShader vs(device, L"WorldVertex.cso", layoutBuilder.build());
@@ -183,39 +156,32 @@ int main()
     /* Time accumulator for rotation */
     f32 time = 0.0f;
 
-
-    auto c = XMVectorSet(0, 0, 0, 0);
-    auto max = XMVectorSet(100, 100, 100, 0);
-
-    auto test = XMVectorSet(34, 34, 34, 0);
-    auto size = XMVectorSet(25, 25, 25, 0);
-    int value = 123;
-
-    OctreeNode<int> node(AABB(c, max));
-    node.tryInsert(make_pair(AABB(test, size), &value));
-
-    std::set<int*> aabb;
-    node.tryQuery(AABB(c, max), aabb);
+    /* Ball with a cow texture on it */
+    auto cowBall = loadMesh(graphics, device, context, "Assets/cowball.obj");
 
     /* Simple textured triangle */
-    auto cowBall = loadMesh(graphics, device, context, "Assets/cowball.obj");
     auto wall = loadMesh(graphics, device, context, "Assets/wall.obj");
 
+    /* Failed to load for some reason */
     if (!cowBall.has_value() || !wall.has_value())
     {
         return -1;
     }
 
+    /* Background color */
     static f32 color[4] = { 0.6f, 0.6f, 1.0f, 1.0f };
 
+    /* Movement vector and position for the cowball*/
     auto move = XMVectorSet(0, 0, -0.02f, 0.0f);
     auto position = XMVectorSet(0.0f, 0, 6.0f, 0.0f);
 
+    /* Hard coded vertices for the triangle, to be used with physics collisions. */
     auto
         v0 = XMVectorSet(3.00000000f, -2.12132001f, -0.121320002f, 0.0f),
         v1 = XMVectorSet(-3.00000000f, -2.12132001f, -0.121320002, 0.0f),
         v2 = XMVectorSet(0.00000000f, 2.12132001f, 4.12132120f, 0.0f);
 
+    /* Calculated normal for the triangle */
     auto n = XMVector3Normalize(
         XMVector3Cross(v1 - v0, v2 - v0)
     );
@@ -223,12 +189,14 @@ int main()
     app.run(
         [&](Application* appl)
         {
+            /* Set Camera context on the "matrices" cbuffer*/
             matrices.setData(cameraContext.m_camera->getCameraBuffer());
             matrices.bind(context, 0);
 
             graphics.getBackBuffer()->clear(graphics, color);
             graphics.getDepthBuffer()->clearDepth(graphics);
 
+            /* Set model transform for the ball */
             model.setData({
                 .model = XMMatrixTranspose(XMMatrixTranslation(
                     XMVectorGetX(position),
@@ -238,22 +206,27 @@ int main()
             });
             model.bind(context, 1);
 
+            /* item2 is the texture loaded from the obj */
             get<1>(cowBall.value())->use(context);
+            /* item1 is the mesh */
             get<0>(cowBall.value())->useAndDraw(context);
 
+            /* No transform for the wall*/
             model.setData({
-                .model = XMMatrixTranspose(XMMatrixIdentity()) // no transform for wall
+                .model = XMMatrixTranspose(XMMatrixIdentity())
             });
             model.bind(context, 1);
 
             get<1>(wall.value())->use(context);
             get<0>(wall.value())->useAndDraw(context);
+
             graphics.present();
         },
         [&](Application* appl, f32 dt)
         {
             time += dt;
 
+            /* Move the sphere against the wall */
             position = CollideSphereTriangle(
                 position,
                 1.0f,
@@ -263,8 +236,6 @@ int main()
                 v2,
                 n
             );
-            //position = CollideSphereTriangle(move * (dt / 100000.0f);
-
         }
     );
 }
