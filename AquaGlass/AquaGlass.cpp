@@ -97,7 +97,7 @@ int main()
     /* Camera context joins the rendering parameters of a camera (its matrices)
      * with the control logic of a camera */
     CameraContext cameraContext(
-        make_shared<NoclipCameraController>(),  /* Simply WAS camera controller */
+        make_shared<NoclipCameraController>(),  /* Simply WASD camera controller */
         make_shared<ICameraTemplate<CameraBuffer>>(  /* Simple perspective projection */
             ProjectionType::Perspective,
             XMVectorSet(0.0f, 8.0f, -16.0f, 0),
