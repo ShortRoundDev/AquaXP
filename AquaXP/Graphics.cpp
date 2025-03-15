@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "Graphics.h"
-
 #include "Application.h"
+#include "ContextHelpers.h"
 
 using namespace AquaXP;
 using namespace std;
+using namespace Microsoft::WRL;
 
 Graphics::Graphics(
     u16 width,
@@ -57,7 +58,7 @@ bool Graphics::initInfrastructure(u16 width, u16 height)
         return false;
     }
 
-    Microsoft::WRL::ComPtr<IDXGIOutput> output = nullptr;
+    ComPtr<IDXGIOutput> output = nullptr;
     if (FAILED(adapter->EnumOutputs(0, &output)))
     {
         return false;
@@ -143,7 +144,7 @@ bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
         return false;
     }
 
-    Microsoft::WRL::ComPtr<IDXGIOutput> output;
+    ComPtr<IDXGIOutput> output;
     if (FAILED(m_swapChain->GetContainingOutput(output.GetAddressOf())))
     {
         return false;
@@ -154,7 +155,7 @@ bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
 
 bool Graphics::initRenderTarget(u16 width, u16 height)
 {
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+    ComPtr<ID3D11Texture2D> backBuffer;
     if (FAILED(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf())))
     {
         return false;
@@ -259,17 +260,33 @@ void Graphics::setDepthBuffer(Texture const* texture)
     m_depthBuffer = texture;
 }
 
-Microsoft::WRL::ComPtr<ID3D11Device> Graphics::getDevice() const
+ComPtr<ID3D11Device> Graphics::getDevice() const
 {
     return m_device;
 }
 
-Microsoft::WRL::ComPtr<ID3D11DeviceContext> Graphics::getContext() const
+ComPtr<ID3D11DeviceContext> Graphics::getContext() const
 {
     return m_context;
 }
 
-Microsoft::WRL::ComPtr<IDXGISwapChain> Graphics::getSwapChain() const
+ComPtr<ID3D11DeviceContext> Graphics::createDeferredContext() const
+{
+    ComPtr<ID3D11DeviceContext> deferredContext;
+    if (FAILED(m_device->CreateDeferredContext(0u, deferredContext.GetAddressOf())))
+    {
+        return nullptr;
+    }
+    return deferredContext;
+}
+
+AQUAXP_API void Graphics::renderDeferredContext(ID3D11DeviceContext* deferredContext, BOOL restoredImmediateContext, BOOL restoreDeferredContext) const
+{
+    auto commandList = GetCommandList(deferredContext, restoreDeferredContext);
+    m_context->ExecuteCommandList(commandList.Get(), restoredImmediateContext);
+}
+
+ComPtr<IDXGISwapChain> Graphics::getSwapChain() const
 {
     return m_swapChain;
 }

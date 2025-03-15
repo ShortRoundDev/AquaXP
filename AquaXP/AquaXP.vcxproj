@@ -159,6 +159,7 @@
     <ClInclude Include="CBuffer.h" />
     <ClInclude Include="CollisionHelpers.h" />
     <ClInclude Include="Concepts.h" />
+    <ClInclude Include="ContextHelpers.h" />
     <ClInclude Include="CubeMap.h" />
     <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Capsule.cpp" />
     <ClCompile Include="CollisionHelpers.cpp" />
+    <ClCompile Include="ContextHelpers.cpp" />
     <ClCompile Include="CubeMap.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Graphics.cpp" />
