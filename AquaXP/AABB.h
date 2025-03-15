@@ -2,6 +2,7 @@
 
 #include <array>
 
+
 namespace AquaXP
 {
     class AABB
@@ -13,7 +14,7 @@ namespace AquaXP
         {
         }
 
-        DirectX::XMVECTOR const& getPosition() const
+        [[nodiscard]] DirectX::XMVECTOR const& getPosition() const
         {
             return m_position;
         }
@@ -28,36 +29,34 @@ namespace AquaXP
             m_position = DirectX::XMVectorAdd(m_position, diff);
         }
 
-        DirectX::XMVECTOR getMax() const
+        [[nodiscard]] DirectX::XMVECTOR getMax() const
         {
             return DirectX::XMVectorAdd(m_position, m_halfWidth);
         }
 
-        DirectX::XMVECTOR getMin() const
+        [[nodiscard]] DirectX::XMVECTOR getMin() const
         {
             return DirectX::XMVectorSubtract(m_position, m_halfWidth);
         }
 
-        DirectX::XMVECTOR const& getHalfWidth() const
+        [[nodiscard]] DirectX::XMVECTOR const& getHalfWidth() const
         {
             return m_halfWidth;
         }
 
-        bool overlap(AABB const& b) const
+        [[nodiscard]] bool overlap(AABB const& b) const
         {
-            auto ac = getPosition();
-            auto bc = b.getPosition();
-            auto ar = getHalfWidth();
-            auto br = b.getHalfWidth();
+            constexpr u32 ALL_BITS = 0xFFFFFFFF;
+
+            auto const& ac = getPosition();
+            auto const& bc = b.getPosition();
+            auto const& ar = getHalfWidth();
+            auto const& br = b.getHalfWidth();
 
             auto cDiff = DirectX::XMVectorAbs(DirectX::XMVectorSubtract(ac, bc));
             auto rSum = DirectX::XMVectorAdd(ar, br);
             auto overlaps = DirectX::XMVectorSetW(DirectX::XMVectorLess(cDiff, rSum), 0);
-            /*auto tst = x == 0xFFFFFFFF;
-            return DirectX::XMVectorGetIntX(overlaps) == 0xFFFFFFFF &&
-                DirectX::XMVectorGetIntY(overlaps) == 0xFFFFFFFF &&
-                DirectX::XMVectorGetIntZ(overlaps) == 0xFFFFFFFF;*/
-            auto intVec = DirectX::XMVectorSetInt(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0);
+            auto intVec = DirectX::XMVectorSetInt(ALL_BITS, ALL_BITS, ALL_BITS, 0);
             return DirectX::XMVector3EqualInt(overlaps, intVec);
         }
 
