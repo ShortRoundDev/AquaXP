@@ -24,6 +24,8 @@ namespace AquaXP
 
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Device> getDevice() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DeviceContext> getContext() const;
+        AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DeviceContext> createDeferredContext() const;
+        AQUAXP_API void renderDeferredContext(ID3D11DeviceContext* deferredContext, BOOL restoredImmediateContext = TRUE, BOOL restoreDeferredContext = FALSE) const;
         AQUAXP_API Microsoft::WRL::ComPtr<IDXGISwapChain> getSwapChain() const;
         AQUAXP_API DXGI_SAMPLE_DESC const& getMultiSamplingDesc() const;
         AQUAXP_API Texture const* getBackBuffer() const;
@@ -38,6 +40,7 @@ namespace AquaXP
         AQUAXP_API Texture const* getRootDepthBuffer() const;
 
         AQUAXP_API void present() const;
+
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Device> m_device;

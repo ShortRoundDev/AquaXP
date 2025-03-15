@@ -73,6 +73,12 @@
     <Filter Include="Source Files\Helpers\Physics">
       <UniqueIdentifier>{cb2b9930-9b85-4e5a-b01f-7e19c7f83b7b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Helpers\Infrastructure">
+      <UniqueIdentifier>{e3ab2453-64c0-4a3c-ab24-9587e85decaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Helpers\Infrastructure">
+      <UniqueIdentifier>{f5799a9d-0806-4fb8-938e-7a0203148aa9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -159,6 +165,9 @@
     <ClInclude Include="CollisionHelpers.h">
       <Filter>Header Files\Helpers\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="ContextHelpers.h">
+      <Filter>Header Files\Helpers\Infrastructure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -214,6 +223,9 @@
     </ClCompile>
     <ClCompile Include="CollisionHelpers.cpp">
       <Filter>Source Files\Helpers\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ContextHelpers.cpp">
+      <Filter>Source Files\Helpers\Infrastructure</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
