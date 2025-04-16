@@ -29,6 +29,7 @@ namespace AquaXP
         AQUAXP_API Microsoft::WRL::ComPtr<IDXGISwapChain> getSwapChain() const;
         AQUAXP_API DXGI_SAMPLE_DESC const& getMultiSamplingDesc() const;
         AQUAXP_API Texture const* getBackBuffer() const;
+        AQUAXP_API std::unique_ptr<Texture const> moveBackBuffer();
 
         AQUAXP_API void resetRenderTarget();
         AQUAXP_API void setRenderTarget(RenderTarget const& renderTarget);
@@ -38,9 +39,9 @@ namespace AquaXP
         AQUAXP_API void setDepthBuffer(Texture const* depthBuffer);
         AQUAXP_API Texture const* getDepthBuffer() const;
         AQUAXP_API Texture const* getRootDepthBuffer() const;
+        AQUAXP_API std::unique_ptr<Texture const> moveRootDepthBuffer();
 
         AQUAXP_API void present() const;
-
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Device> m_device;

@@ -68,6 +68,16 @@ namespace AquaXP
             context->VSSetShader(m_shader.Get(), NULL, 0);
         }
 
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D11VertexShader> getShader() const
+        {
+            return m_shader;
+        }
+
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D11InputLayout> getInputLayout() const
+        {
+            return m_inputLayout;
+        }
+
     private:
         Microsoft::WRL::ComPtr<ID3D11VertexShader> m_shader;
         Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;

@@ -38,6 +38,10 @@ namespace AquaXP
             context->PSSetShader(m_shader.Get(), NULL, 0);
         }
 
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D11PixelShader> getShader() const
+        {
+            return m_shader;
+        }
 
     private:
         Microsoft::WRL::ComPtr<ID3D11PixelShader> m_shader;

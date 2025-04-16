@@ -301,6 +301,11 @@ Texture const* Graphics::getBackBuffer() const
     return m_backBuffer.get();
 }
 
+std::unique_ptr<Texture const> Graphics::moveBackBuffer()
+{
+    return std::move(m_backBuffer);
+}
+
 void Graphics::setRenderTarget(Texture const* renderTarget, Texture const* depthBuffer)
 {
     RenderTarget rt = {
@@ -319,6 +324,11 @@ Texture const* Graphics::getDepthBuffer() const
 Texture const* Graphics::getRootDepthBuffer() const
 {
     return m_rootDepthBuffer.get();
+}
+
+unique_ptr<Texture const> Graphics::moveRootDepthBuffer()
+{
+    return std::move(m_rootDepthBuffer);
 }
 
 RenderTarget const& Graphics::getRenderTarget() const

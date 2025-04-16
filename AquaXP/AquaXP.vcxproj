@@ -173,6 +173,7 @@
     <ClInclude Include="OctreeNode.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="PointLight.h" />
     <ClInclude Include="RegisterAction.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="ShaderHelper.h" />
@@ -201,6 +202,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="StepTimer.cpp" />
     <ClCompile Include="Texture.cpp" />

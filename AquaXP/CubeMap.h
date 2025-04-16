@@ -19,7 +19,7 @@ namespace AquaXP
         Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthMapTexture2D;
     };
 
-    enum class PointShadowFace
+    enum class CubeMapFace
     {
         Right = 0,
         Left = 1,
@@ -29,46 +29,46 @@ namespace AquaXP
         Back = 5
     };
 
-    consteval std::pair<DirectX::XMVECTOR, DirectX::XMVECTOR> GetPointShadowMapLook(PointShadowFace face)
+    consteval std::pair<DirectX::XMVECTOR, DirectX::XMVECTOR> GetCubeMapLook(CubeMapFace face)
     {
         switch (face)
         {
-        case PointShadowFace::Right:
+        case CubeMapFace::Right:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(1, 0, 0, 0),
                 DirectX::XMVectorSet(0, 1, 0, 0)
             );
         }
-        case PointShadowFace::Left:
+        case CubeMapFace::Left:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(-1, 0, 0, 0),
                 DirectX::XMVectorSet(0, 1, 0, 0)
             );
         }
-        case PointShadowFace::Up:
+        case CubeMapFace::Up:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, 1, 0, 0),
                 DirectX::XMVectorSet(0, 0, -1, 0)
             );
         }
-        case PointShadowFace::Down:
+        case CubeMapFace::Down:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, -1, 0, 0),
                 DirectX::XMVectorSet(0, 0, 1, 0)
             );
         }
-        case PointShadowFace::Front:
+        case CubeMapFace::Front:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, 0, 1, 0),
                 DirectX::XMVectorSet(0, 0, 1, 0)
             );
         }
-        case PointShadowFace::Back:
+        case CubeMapFace::Back:
         {
             return std::make_pair(
                 DirectX::XMVectorSet(0, 0, -1, 0),

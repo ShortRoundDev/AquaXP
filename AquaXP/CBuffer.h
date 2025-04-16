@@ -102,6 +102,11 @@ namespace AquaXP
             return m_cBufferData;
         }
 
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D11Buffer> getBuffer() const
+        {
+            return m_cBuffer;
+        }
+
 
     private:
         T m_cBufferData;

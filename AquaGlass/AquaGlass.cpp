@@ -85,6 +85,7 @@ using MyVector = std::vector<T, SomeAlloc<T>>;
 
 int main()
 {
+
     /* Initialize Window and DirectX infrastructure */
     Application app(800, 600, L"AquaGlass", false, false, false, true);
 
@@ -178,7 +179,7 @@ int main()
     /* Hard coded vertices for the triangle, to be used with physics collisions. */
     auto
         v0 = XMVectorSet(3.00000000f, -2.12132001f, -0.121320002f, 0.0f),
-        v1 = XMVectorSet(-3.00000000f, -2.12132001f, -0.121320002, 0.0f),
+        v1 = XMVectorSet(-3.00000000f, -2.12132001f, -0.121320002f, 0.0f),
         v2 = XMVectorSet(0.00000000f, 2.12132001f, 4.12132120f, 0.0f);
 
     /* Calculated normal for the triangle */
