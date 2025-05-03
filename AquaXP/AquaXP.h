@@ -7,6 +7,7 @@
 #include <set>
 #include <variant>
 #include <array>
+#include <memory>
 
 #include "framework.h"
 

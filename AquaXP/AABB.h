@@ -65,7 +65,7 @@ namespace AquaXP
         DirectX::XMVECTOR m_halfWidth;
     };
 
-    void SubdivideAABB(AABB const& in, std::array<AABB, 8>& out)
+    inline void SubdivideAABB(AABB const& in, std::array<AABB, 8>& out)
     {
         auto pos = in.getPosition();
         auto half = in.getHalfWidth();
