@@ -36,6 +36,10 @@ namespace AquaXP
         AQUAXP_API void setRenderTarget(Texture const* renderTarget, Texture const* depthBuffer);
         AQUAXP_API RenderTarget const& getRenderTarget() const;
 
+        AQUAXP_API void setViewPort(std::optional<D3D11_VIEWPORT const> viewPort = std::nullopt);
+        AQUAXP_API D3D11_VIEWPORT const& getViewPort() const;
+        AQUAXP_API D3D11_VIEWPORT const& getRootViewPort() const;
+
         AQUAXP_API void setDepthBuffer(Texture const* depthBuffer);
         AQUAXP_API Texture const* getDepthBuffer() const;
         AQUAXP_API Texture const* getRootDepthBuffer() const;
@@ -49,6 +53,9 @@ namespace AquaXP
         Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
         Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizer;
         Microsoft::WRL::ComPtr<IDXGIFactory> m_factory;
+
+        D3D11_VIEWPORT m_viewPort;
+        D3D11_VIEWPORT m_rootViewPort;
 
         DXGI_SAMPLE_DESC m_sampleDesc;
 

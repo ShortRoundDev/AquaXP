@@ -13,7 +13,6 @@ Texture::Texture(
     D3D11_BIND_FLAG flags
 ) :
     m_texture2D(),
-    m_depthStencilTexture(),
     m_shaderResourceView(),
     m_depthStencilView(),
     m_renderTargetView(),
@@ -64,7 +63,6 @@ Texture::Texture(
     D3D11_BIND_FLAG flags
 ) :
     m_texture2D(),
-    m_depthStencilTexture(),
     m_shaderResourceView(),
     m_depthStencilView(),
     m_renderTargetView(),
@@ -119,7 +117,6 @@ Texture::Texture(
     D3D11_BIND_FLAG flags
 ) :
     m_texture2D(),
-    m_depthStencilTexture(),
     m_shaderResourceView(),
     m_depthStencilView(),
     m_renderTargetView(),
@@ -163,10 +160,10 @@ Texture::Texture(
     f32 width,
     f32 height,
     DXGI_SAMPLE_DESC const& sampleDesc,
-    D3D11_BIND_FLAG flags
+    D3D11_BIND_FLAG flags,
+    optional<DXGI_FORMAT> format
 ) :
     m_texture2D(),
-    m_depthStencilTexture(),
     m_shaderResourceView(),
     m_depthStencilView(),
     m_renderTargetView(),
@@ -180,7 +177,7 @@ Texture::Texture(
     desc.Height = static_cast<u32>(height);
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = (flags & D3D11_BIND_DEPTH_STENCIL) ? DXGI_FORMAT_D24_UNORM_S8_UINT : DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.Format = format.value_or((flags & D3D11_BIND_DEPTH_STENCIL) ? DXGI_FORMAT_D24_UNORM_S8_UINT : DXGI_FORMAT_R8G8B8A8_UNORM);
     desc.SampleDesc = sampleDesc;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = flags;
@@ -211,7 +208,6 @@ Texture::Texture(
     D3D11_BIND_FLAG flags
 ) :
     m_texture2D(raw),
-    m_depthStencilTexture(),
     m_shaderResourceView(),
     m_depthStencilView(),
     m_renderTargetView(),
@@ -258,21 +254,6 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
 
     if (flags & D3D11_BIND_DEPTH_STENCIL)
     {
-        D3D11_TEXTURE2D_DESC depthStencilTextureDesc = {};
-        depthStencilTextureDesc.Width = desc.Width;
-        depthStencilTextureDesc.Height = desc.Height;
-        depthStencilTextureDesc.MipLevels = 1;
-        depthStencilTextureDesc.ArraySize = 1;
-        depthStencilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        depthStencilTextureDesc.SampleDesc = desc.SampleDesc;
-        depthStencilTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-        depthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-        if (FAILED(device->CreateTexture2D(&depthStencilTextureDesc, nullptr, &m_depthStencilTexture)))
-        {
-            return false;
-        }
-
         D3D11_DEPTH_STENCIL_DESC depthStencilDesc = { };
         ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
         depthStencilDesc.DepthEnable = true;
@@ -296,11 +277,11 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
         }
 
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-        dsvDesc.Format = depthStencilTextureDesc.Format;
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
         dsvDesc.Texture2D.MipSlice = 0;
 
-        if (FAILED(device->CreateDepthStencilView(m_depthStencilTexture.Get(), &dsvDesc, &m_depthStencilView)))
+        if (FAILED(device->CreateDepthStencilView(m_texture2D.Get(), &dsvDesc, &m_depthStencilView)))
         {
             return false;
         }
@@ -322,14 +303,14 @@ Texture::Texture(Graphics const& graphics, std::wstring const& path, D3D11_BIND_
 Texture::Texture(Graphics const& graphics, wchar_t const* path, D3D11_BIND_FLAG flags) :
     Texture(graphics, wstring(path), flags) { }
 
-Texture::Texture(Graphics const& graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags) :
-    Texture(graphics.getDevice().Get(), width, height, sampleDesc, flags) { }
+Texture::Texture(Graphics const& graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags, std::optional<DXGI_FORMAT> format) :
+    Texture(graphics.getDevice().Get(), width, height, sampleDesc, flags, format) { }
 
 Texture::Texture(Graphics const& graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags) :
     Texture(graphics.getDevice().Get(), graphics.getContext().Get(), data, size, flags) { }
 
-Texture::Texture(Graphics const& graphics, f32 width, f32 height, D3D11_BIND_FLAG flags) :
-    Texture(graphics.getDevice().Get(), width, height, graphics.getMultiSamplingDesc(), flags) { }
+Texture::Texture(Graphics const& graphics, f32 width, f32 height, D3D11_BIND_FLAG flags, std::optional<DXGI_FORMAT> format) :
+    Texture(graphics.getDevice().Get(), width, height, graphics.getMultiSamplingDesc(), flags, format) { }
 
 Texture::Texture(Graphics const& graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D> raw, D3D11_BIND_FLAG flags) :
     Texture(graphics.getDevice().Get(), raw, flags) { }

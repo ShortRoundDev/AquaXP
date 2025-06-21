@@ -54,7 +54,7 @@ optional<pair<shared_ptr<Mesh<Vertex>>, shared_ptr<Texture>>> loadMesh(Graphics 
         }
         for (u32 j = 0; j < mesh->mNumFaces; j++)
         {
-            auto face = mesh->mFaces[j];
+            auto const& face = mesh->mFaces[j];
             for (u32 k = 0; k < face.mNumIndices; k++)
             {
                 indices.push_back(face.mIndices[k]);

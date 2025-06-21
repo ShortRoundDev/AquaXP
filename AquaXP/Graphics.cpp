@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "ContextHelpers.h"
 
+#include <iostream>
+
 using namespace AquaXP;
 using namespace std;
 using namespace Microsoft::WRL;
@@ -19,12 +21,22 @@ Graphics::Graphics(
     m_width(width),
     m_height(height)
 {
-    initInfrastructure(width, height);
-    initSwapchain(hwnd, fullscreen);
-    initRenderTarget(width, height);
-    initDepthStencilBuffer(width, height);
+    if (!initInfrastructure(width, height)) {
+        std::cout << "Failed to init infrastructure" << std::endl;
+    }
+    if (!initSwapchain(hwnd, fullscreen)) {
+        std::cout << "Failed to init swapchain" << std::endl;
+    }
+    if (!initRenderTarget(width, height)) {
+        std::cout << "Failed to init rtv" << std::endl;
+    }
+    if (!initDepthStencilBuffer(width, height)) {
+        std::cout << "Failed to init depth buffer" << std::endl;
+    }
     setRenderTarget(m_backBuffer.get(), m_rootDepthBuffer.get());
-    initRasterizer();
+    if (!initRasterizer()) {
+        std::cout << "Failed to init rasterizer!" << std::endl;
+    }
 }
 
 
@@ -252,7 +264,23 @@ void Graphics::setRenderTarget(RenderTarget const& renderTarget)
         .MaxDepth = 1.0f
     };
 
-    m_context->RSSetViewports(1, &viewport);
+    setViewPort(viewport);
+}
+
+void Graphics::setViewPort(std::optional<D3D11_VIEWPORT const> viewPort)
+{
+    m_viewPort = viewPort.value_or(m_rootViewPort);
+    m_context->RSSetViewports(1, &m_viewPort);
+}
+
+D3D11_VIEWPORT const& Graphics::getViewPort() const
+{
+    return m_viewPort;
+}
+
+D3D11_VIEWPORT const& Graphics::getRootViewPort() const
+{
+    return m_rootViewPort;
 }
 
 void Graphics::setDepthBuffer(Texture const* texture)

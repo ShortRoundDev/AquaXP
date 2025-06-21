@@ -19,9 +19,9 @@ namespace AquaXP
         AQUAXP_API Texture(Graphics const& graphics, u8 const* data, sz size, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, ID3D11DeviceContext* context, u8 const* data, sz size, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
 
-        AQUAXP_API Texture(Graphics const& graphics, f32 width, f32 height, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
-        AQUAXP_API Texture(Graphics const& graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
-        AQUAXP_API Texture(ID3D11Device* device, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc = { .Count = 1, .Quality = 0 }, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
+        AQUAXP_API Texture(Graphics const& graphics, f32 width, f32 height, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE, std::optional<DXGI_FORMAT> format = std::nullopt);
+        AQUAXP_API Texture(Graphics const& graphics, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE, std::optional<DXGI_FORMAT> format = std::nullopt);
+        AQUAXP_API Texture(ID3D11Device* device, f32 width, f32 height, DXGI_SAMPLE_DESC const& sampleDesc = { .Count = 1, .Quality = 0 }, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE, std::optional<DXGI_FORMAT> format = std::nullopt);
 
         AQUAXP_API Texture(Graphics const& graphics, Microsoft::WRL::ComPtr<ID3D11Texture2D>, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, Microsoft::WRL::ComPtr<ID3D11Texture2D>, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
@@ -50,7 +50,6 @@ namespace AquaXP
         bool m_status;
 
         Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture2D;
-        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilTexture;
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_shaderResourceView;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
