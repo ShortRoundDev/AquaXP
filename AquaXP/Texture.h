@@ -34,7 +34,6 @@ namespace AquaXP
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Texture2D> getTexture2D() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> getShaderResourceView() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DepthStencilView> getDepthStencilView() const;
-        AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DepthStencilState> getDepthStencilState() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11RenderTargetView> getRenderTargetView() const;
 
         AQUAXP_API f32 getWidth() const;
@@ -55,7 +54,6 @@ namespace AquaXP
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 
         D3D11_BIND_FLAG m_flags;
-        Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
         f32 m_width;
         f32 m_height;

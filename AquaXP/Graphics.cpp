@@ -33,7 +33,11 @@ Graphics::Graphics(
     if (!initDepthStencilBuffer(width, height)) {
         std::cout << "Failed to init depth buffer" << std::endl;
     }
-    setRenderTarget(m_backBuffer.get(), m_rootDepthBuffer.get());
+    setRenderTarget(
+        m_backBuffer.get(),
+        m_rootDepthBuffer.get(),
+        m_rootDepthStencilState.get()
+    );
     if (!initRasterizer()) {
         std::cout << "Failed to init rasterizer!" << std::endl;
     }
@@ -192,30 +196,15 @@ bool Graphics::initDepthStencilBuffer(u16 width, u16 height)
 
     m_depthBuffer = m_rootDepthBuffer.get();
 
+    m_rootDepthStencilState = make_unique<DepthStencilState>(m_device.Get());
+
     return true;
 }
 
 bool Graphics::initRasterizer()
 {
-    D3D11_RASTERIZER_DESC rasterDesc = { };
-    ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
-    rasterDesc.AntialiasedLineEnable = FALSE;
-    rasterDesc.CullMode = D3D11_CULL_NONE;
-    rasterDesc.DepthBias = 0;
-    rasterDesc.DepthBiasClamp = 0.0f;
-    rasterDesc.DepthClipEnable = true;
-    rasterDesc.FillMode = D3D11_FILL_SOLID;
-    rasterDesc.MultisampleEnable = TRUE;
-    rasterDesc.ScissorEnable = false;
-    rasterDesc.SlopeScaledDepthBias = 0.0f;
-    rasterDesc.FrontCounterClockwise = false;
-
-    if (FAILED(m_device->CreateRasterizerState(&rasterDesc, m_rasterizer.GetAddressOf())))
-    {
-        return false;
-    }
-
-    m_context->RSSetState(m_rasterizer.Get());
+    m_rootRasterizerState = make_unique<RasterizerState const>(m_device.Get());
+    setRasterizerState(m_rootRasterizerState.get());
     return true;
 }
 
@@ -238,7 +227,13 @@ void Graphics::setRenderTarget(RenderTarget const& renderTarget)
 
     m_depthBuffer = renderTarget.depthBuffer;
 
-    m_context->OMSetDepthStencilState(m_depthBuffer->getDepthStencilState().Get(), 1);
+    if (renderTarget.depthStencilState.has_value()) {
+        setDepthStencilState(
+            renderTarget.depthStencilState.value(),
+            renderTarget.stencilRef.value_or(1)
+        );
+    }
+    //m_context->OMSetDepthStencilState(m_depthBuffer->getDepthStencilState().Get(), 1);
     m_context->OMSetRenderTargets(
         static_cast<u32>(renderTarget.numRenderTargets),
         renderTarget.numRenderTargets > 0 ? s_renderTargetViews : nullptr,
@@ -334,12 +329,19 @@ std::unique_ptr<Texture const> Graphics::moveBackBuffer()
     return std::move(m_backBuffer);
 }
 
-void Graphics::setRenderTarget(Texture const* renderTarget, Texture const* depthBuffer)
+void Graphics::setRenderTarget(
+    Texture const* renderTarget,
+    Texture const* depthBuffer,
+    std::optional<DepthStencilState const*> depthStencilState,
+    UINT stencilRef
+)
 {
     RenderTarget rt = {
         renderTarget,
         static_cast<sz>(renderTarget == nullptr ? 0 : 1),
-        depthBuffer
+        depthBuffer,
+        depthStencilState,
+        stencilRef
     };
     setRenderTarget(rt);
 }
@@ -362,6 +364,56 @@ unique_ptr<Texture const> Graphics::moveRootDepthBuffer()
 RenderTarget const& Graphics::getRenderTarget() const
 {
     return m_renderTarget;
+}
+
+RenderTarget Graphics::getRootRenderTarget() const {
+    return {
+        .renderTargets = m_backBuffer.get(),
+        .numRenderTargets = 1,
+        .depthBuffer = m_depthBuffer
+    };
+}
+
+void Graphics::setDepthStencilState(DepthStencilState const* depthStencilState, UINT stencilRef)
+{
+    m_depthStencilState = depthStencilState;
+    m_context->OMSetDepthStencilState(m_depthStencilState->getDepthStencilState().Get(), stencilRef);
+}
+
+DepthStencilState const* Graphics::getDepthStencilState() const
+{
+    return m_depthStencilState;
+}
+
+DepthStencilState const* Graphics::getRootDepthStencilState() const
+{
+    return m_rootDepthStencilState.get();
+}
+
+void Graphics::resetDepthStencilState()
+{
+    m_depthStencilState = m_rootDepthStencilState.get();
+}
+
+void Graphics::setRasterizerState(RasterizerState const* rasterizerState)
+{
+    m_rasterizerState = rasterizerState;
+    m_context->RSSetState(m_rasterizerState->getRasterizerState().Get());
+}
+
+RasterizerState const* Graphics::getRasterizerState() const
+{
+    return m_rasterizerState;
+}
+
+RasterizerState const* Graphics::getRootRasterizerState() const
+{
+    return m_rootRasterizerState.get();
+}
+
+void Graphics::resetRasterizerState()
+{
+    setRasterizerState(m_rootRasterizerState.get());
 }
 
 void Graphics::present() const

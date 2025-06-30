@@ -22,6 +22,7 @@
 #include <functional>
 #include <numbers>
 #include <variant>
+#include <math.h>
 
 //DirectX
 #include "d3d11.h"

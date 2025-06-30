@@ -37,3 +37,5 @@
 #include "RegisterAction.h"
 #include "CollisionHelpers.h"
 #include "ContextHelpers.h"
+
+#include "Shapes.h"

@@ -85,6 +85,18 @@
     <Filter Include="Header Files\Helpers\Light">
       <UniqueIdentifier>{cbe9ef24-2958-4e29-8fd1-acd9281e3ada}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Helpers\Geometry">
+      <UniqueIdentifier>{b8e0011d-6d0c-457c-a8a3-610d10109677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Helpers\Geometry">
+      <UniqueIdentifier>{0abcd88b-a496-4ff5-93f1-b6066deefd25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\API\State">
+      <UniqueIdentifier>{3cbe6e32-0d71-432d-b917-3876e4dc708c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\API\State">
+      <UniqueIdentifier>{e0de366c-b11a-45ec-a2ab-9de33a9413c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -156,9 +168,6 @@
     <ClInclude Include="CubeMap.h">
       <Filter>Header Files\API\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="Sampler.h">
-      <Filter>Header Files\API</Filter>
-    </ClInclude>
     <ClInclude Include="RegisterAction.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
@@ -176,6 +185,21 @@
     </ClInclude>
     <ClInclude Include="PointLight.h">
       <Filter>Header Files\Helpers\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryShader.h">
+      <Filter>Header Files\API\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes.h">
+      <Filter>Header Files\Helpers\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h">
+      <Filter>Header Files\API\State</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthStencilState.h">
+      <Filter>Header Files\API\State</Filter>
+    </ClInclude>
+    <ClInclude Include="RasterizerState.h">
+      <Filter>Header Files\API\State</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -221,9 +245,6 @@
     <ClCompile Include="NoclipCameraController.cpp">
       <Filter>Source Files\Tools\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Sampler.cpp">
-      <Filter>Header Files\API</Filter>
-    </ClCompile>
     <ClCompile Include="ISettingsLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -238,6 +259,21 @@
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
       <Filter>Source Files\Helpers\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryShader.cpp">
+      <Filter>Source Files\API\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Shapes.cpp">
+      <Filter>Source Files\Helpers\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp">
+      <Filter>Source Files\API\State</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthStencilState.cpp">
+      <Filter>Source Files\API\State</Filter>
+    </ClCompile>
+    <ClCompile Include="RasterizerState.cpp">
+      <Filter>Source Files\API\State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

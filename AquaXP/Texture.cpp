@@ -254,28 +254,6 @@ bool Texture::initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags)
 
     if (flags & D3D11_BIND_DEPTH_STENCIL)
     {
-        D3D11_DEPTH_STENCIL_DESC depthStencilDesc = { };
-        ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
-        depthStencilDesc.DepthEnable = true;
-        depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-        depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-        depthStencilDesc.StencilEnable = true;
-        depthStencilDesc.StencilReadMask = 0xff;
-        depthStencilDesc.StencilWriteMask = 0xff;
-        depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-        depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-        depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-        depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-        depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-        depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-        depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-        depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-        if (FAILED(device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf())))
-        {
-            return false;
-        }
-
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
         dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
@@ -342,11 +320,6 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Texture::getShaderResourceView(
 Microsoft::WRL::ComPtr<ID3D11DepthStencilView> Texture::getDepthStencilView() const
 {
     return m_depthStencilView;
-}
-
-Microsoft::WRL::ComPtr<ID3D11DepthStencilState> Texture::getDepthStencilState() const
-{
-    return m_depthStencilState;
 }
 
 Microsoft::WRL::ComPtr<ID3D11RenderTargetView> Texture::getRenderTargetView() const

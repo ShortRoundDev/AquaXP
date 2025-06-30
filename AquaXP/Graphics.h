@@ -1,5 +1,7 @@
 #pragma once
 #include "Texture.h"
+#include "DepthStencilState.h"
+#include "RasterizerState.h"
 
 namespace AquaXP
 {
@@ -8,6 +10,8 @@ namespace AquaXP
         Texture const* renderTargets;
         sz numRenderTargets;
         Texture const* depthBuffer;
+        std::optional<DepthStencilState const*> depthStencilState;
+        std::optional<UINT> stencilRef;
     };
 
     class Application;
@@ -33,8 +37,24 @@ namespace AquaXP
 
         AQUAXP_API void resetRenderTarget();
         AQUAXP_API void setRenderTarget(RenderTarget const& renderTarget);
-        AQUAXP_API void setRenderTarget(Texture const* renderTarget, Texture const* depthBuffer);
+        AQUAXP_API void setRenderTarget(
+            Texture const* renderTarget,
+            Texture const* depthBuffer,
+            std::optional<DepthStencilState const*> depthStencilState = std::nullopt,
+            UINT stencilRef = 1
+        );
         AQUAXP_API RenderTarget const& getRenderTarget() const;
+        AQUAXP_API RenderTarget getRootRenderTarget() const;
+
+        AQUAXP_API void setDepthStencilState(DepthStencilState const* depthStencilState, UINT stencilRef = 1);
+        AQUAXP_API DepthStencilState const* getDepthStencilState() const;
+        AQUAXP_API DepthStencilState const* getRootDepthStencilState() const;
+        AQUAXP_API void resetDepthStencilState();
+
+        AQUAXP_API void setRasterizerState(RasterizerState const* rasterizerState);
+        AQUAXP_API RasterizerState const* getRasterizerState() const;
+        AQUAXP_API RasterizerState const* getRootRasterizerState() const;
+        AQUAXP_API void resetRasterizerState();
 
         AQUAXP_API void setViewPort(std::optional<D3D11_VIEWPORT const> viewPort = std::nullopt);
         AQUAXP_API D3D11_VIEWPORT const& getViewPort() const;
@@ -51,7 +71,6 @@ namespace AquaXP
         Microsoft::WRL::ComPtr<ID3D11Device> m_device;
         Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
         Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
-        Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizer;
         Microsoft::WRL::ComPtr<IDXGIFactory> m_factory;
 
         D3D11_VIEWPORT m_viewPort;
@@ -67,9 +86,16 @@ namespace AquaXP
         DXGI_MODE_DESC m_displayMode;
 
         std::unique_ptr<Texture const> m_backBuffer;
+        
         RenderTarget m_renderTarget;
+        
         Texture const* m_depthBuffer;
+        DepthStencilState const* m_depthStencilState;
+        RasterizerState const* m_rasterizerState;
+
         std::unique_ptr<Texture const> m_rootDepthBuffer;
+        std::unique_ptr<DepthStencilState const> m_rootDepthStencilState;
+        std::unique_ptr<RasterizerState const> m_rootRasterizerState;
 
         using Initializer = bool(Graphics::*)(Application* application);
         bool initWaterfall(

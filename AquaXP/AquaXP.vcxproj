@@ -116,7 +116,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;AQUAXP_EXPORTS;_WINDOWS;_USRDLL;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;AQUAXP_EXPORTS;_WINDOWS;_USRDLL;NOMINMAX;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -161,8 +161,10 @@
     <ClInclude Include="Concepts.h" />
     <ClInclude Include="ContextHelpers.h" />
     <ClInclude Include="CubeMap.h" />
+    <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GeometryShader.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="ICamera.h" />
     <ClInclude Include="InputLayoutBuilder.h" />
@@ -174,9 +176,11 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="PointLight.h" />
+    <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="RegisterAction.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="ShaderHelper.h" />
+    <ClInclude Include="Shapes.h" />
     <ClInclude Include="StepTimer.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="Texture.h" />
@@ -189,7 +193,9 @@
     <ClCompile Include="CollisionHelpers.cpp" />
     <ClCompile Include="ContextHelpers.cpp" />
     <ClCompile Include="CubeMap.cpp" />
+    <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="GeometryShader.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ICamera.cpp" />
     <ClCompile Include="InputLayoutBuilder.cpp" />
@@ -203,7 +209,9 @@
     </ClCompile>
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="RasterizerState.cpp" />
     <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="StepTimer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VertexShader.cpp" />
