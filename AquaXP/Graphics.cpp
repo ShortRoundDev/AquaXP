@@ -19,7 +19,8 @@ Graphics::Graphics(
     m_swapChain(),
     m_backBuffer(),
     m_width(width),
-    m_height(height)
+    m_height(height),
+    m_fullScreenQuad()
 {
     if (!initInfrastructure(width, height)) {
         std::cout << "Failed to init infrastructure" << std::endl;
@@ -41,8 +42,8 @@ Graphics::Graphics(
     if (!initRasterizer()) {
         std::cout << "Failed to init rasterizer!" << std::endl;
     }
+    m_fullScreenQuad = CreateFullScreenQuad(m_device.Get());
 }
-
 
 bool Graphics::initWaterfall(
     Application* application,
@@ -180,7 +181,7 @@ bool Graphics::initRenderTarget(u16 width, u16 height)
     m_backBuffer = std::make_unique<Texture>(
         *this,
         backBuffer,
-        static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET | D3D11_BIND_DEPTH_STENCIL)
+        static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET)
     );
 
     return true;
@@ -188,14 +189,21 @@ bool Graphics::initRenderTarget(u16 width, u16 height)
 
 bool Graphics::initDepthStencilBuffer(u16 width, u16 height)
 {
-    m_rootDepthBuffer = make_unique<Texture>(
-        *this,
-        static_cast<f32>(width), static_cast<f32>(height),
-        D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL
+
+    auto depthResult = CreateDepthTarget(
+        m_device.Get(),
+        static_cast<u32>(width),
+        static_cast<u32>(height),
+        getMultiSamplingDesc()
     );
+    if (auto error = errorOpt(depthResult))
+    {
+        // TODO: Convert this to monad return
+        return false;
+    }
 
+    m_rootDepthBuffer = make_unique<Texture>(get(depthResult));
     m_depthBuffer = m_rootDepthBuffer.get();
-
     m_rootDepthStencilState = make_unique<DepthStencilState>(m_device.Get());
 
     return true;
@@ -324,11 +332,6 @@ Texture const* Graphics::getBackBuffer() const
     return m_backBuffer.get();
 }
 
-std::unique_ptr<Texture const> Graphics::moveBackBuffer()
-{
-    return std::move(m_backBuffer);
-}
-
 void Graphics::setRenderTarget(
     Texture const* renderTarget,
     Texture const* depthBuffer,
@@ -356,9 +359,9 @@ Texture const* Graphics::getRootDepthBuffer() const
     return m_rootDepthBuffer.get();
 }
 
-unique_ptr<Texture const> Graphics::moveRootDepthBuffer()
+Mesh<ScreenQuadVertex> const* Graphics::getFullScreenQuad() const
 {
-    return std::move(m_rootDepthBuffer);
+    return m_fullScreenQuad.get();
 }
 
 RenderTarget const& Graphics::getRenderTarget() const
@@ -392,7 +395,7 @@ DepthStencilState const* Graphics::getRootDepthStencilState() const
 
 void Graphics::resetDepthStencilState()
 {
-    m_depthStencilState = m_rootDepthStencilState.get();
+    setDepthStencilState(m_rootDepthStencilState.get());
 }
 
 void Graphics::setRasterizerState(RasterizerState const* rasterizerState)

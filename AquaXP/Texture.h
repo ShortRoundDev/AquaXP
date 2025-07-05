@@ -1,13 +1,62 @@
 #pragma once
 
+#include "Result.h"
+
 namespace AquaXP
 {
     constexpr f32 CLEAR_COLOR[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+#pragma warning( push )
+#pragma warning( disable: 4251 )
+    struct SRVOptions
+    {
+        std::optional<DXGI_FORMAT> format;
+        std::optional<D3D11_SRV_DIMENSION> viewDimension;
+    };
+    
+    struct RTVOptions
+    {
+        std::optional<DXGI_FORMAT> format;
+        std::optional<D3D11_RTV_DIMENSION> viewDimension;
+    };
+
+    struct DSVOptions
+    {
+        std::optional<DXGI_FORMAT> format;
+        std::optional<D3D11_DSV_DIMENSION> viewDimension;
+        UINT flags;
+    };
+
+    struct TextureOptions
+    {
+        u32 width;
+        u32 height;
+        DXGI_FORMAT format;
+        UINT bindFlags;
+        std::optional<UINT> mipLevels;
+        std::optional<UINT> arraySize;
+        std::optional<DXGI_SAMPLE_DESC> sampleDesc;
+        std::optional<D3D11_USAGE> usage;
+        std::optional<SRVOptions> srv;
+        std::optional<RTVOptions> rtv;
+        std::optional<DSVOptions> dsv;
+        std::optional<UINT> cpuAccessFlags;
+        std::optional<UINT> miscFlags;
+    };
+#pragma warning( pop )
 
     class Graphics;
     class Texture
     {
     public:
+        AQUAXP_API Texture(
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
+            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView,
+            Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView,
+            Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView,
+            D3D11_BIND_FLAG flags
+        );
+
         AQUAXP_API Texture(Graphics const& graphics, std::string const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(Graphics const& graphics, char const* path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
         AQUAXP_API Texture(ID3D11Device* device, ID3D11DeviceContext* context, std::string const& path, D3D11_BIND_FLAG flags = D3D11_BIND_SHADER_RESOURCE);
@@ -43,7 +92,10 @@ namespace AquaXP
         AQUAXP_API bool getStatus() const;
 
         AQUAXP_API void clear(Graphics const& graphics, f32 const clearColor[4] = CLEAR_COLOR) const;
-        AQUAXP_API void clearDepth(Graphics const& graphics) const;
+        AQUAXP_API void clearDepth(Graphics const& graphics, f32 value = 1.0f) const;
+        AQUAXP_API void clearStencil(Graphics const& graphics, u32 value = 0) const;
+        AQUAXP_API void clearDepthStencil(Graphics const& graphics, f32 depth = 1.0f, u32 stencil = 0) const;
+        
 
     private:
         bool m_status;
@@ -60,4 +112,29 @@ namespace AquaXP
 
         bool initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags);
     };
+
+    Result<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> CreateShaderResourceView(
+        ID3D11Device* device,
+        ID3D11Texture2D* texture,
+        std::optional<D3D11_SHADER_RESOURCE_VIEW_DESC> desc = std::nullopt
+    );
+
+    Result<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>> CreateDepthStencilView(
+        ID3D11Device* device,
+        ID3D11Texture2D* texture,
+        D3D11_DEPTH_STENCIL_VIEW_DESC const& desc
+    );
+
+    Result<Microsoft::WRL::ComPtr<ID3D11Texture2D>> CreateTexture2D(
+        ID3D11Device* device,
+        D3D11_TEXTURE2D_DESC const& desc
+    );
+
+    Result<Texture> CreateDepthTarget(
+        ID3D11Device* device,
+        u32 width,
+        u32 height,
+        DXGI_SAMPLE_DESC sampleDesc,
+        bool isSrv = true
+    );
 }

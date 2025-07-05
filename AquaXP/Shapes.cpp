@@ -5,21 +5,21 @@ using namespace AquaXP;
 using namespace std;
 using namespace DirectX;
 
-shared_ptr<Mesh<LightVolumeVertex>> CreateSphere(ID3D11Device* device, u32 rings, u32 sectors)
+shared_ptr<Mesh<SimplePositionVertex>> AquaXP::CreateSphere(ID3D11Device* device, u32 rings, u32 sectors)
 {
-	vector<LightVolumeVertex> vertices;
+	vector<SimplePositionVertex> vertices;
 	vector<u32> indices;
 	for (u32 ring = 0; ring <= rings; ring++)
 	{
-		f32 phi = M_PI * ring / rings;
+		f32 phi = static_cast<f32>(M_PI) * ring / rings;
 		for (u32 sector = 0; sector <= sectors; sector++) {
-			f32 theta = 2.0f * M_PI * sector / sectors;
+			f32 theta = 2.0f * static_cast<f32>(M_PI) * sector / sectors;
 
 			f32 x = sinf(phi) * cosf(theta),
 				y = cosf(phi),
 				z = sinf(phi) * sinf(theta);
 
-			vertices.push_back({ .m_position = XMFLOAT4(x, y, z, 0.0f) });
+			vertices.push_back({ .m_position = XMFLOAT3(x, y, z) });
 		}
 	}
 
@@ -42,5 +42,20 @@ shared_ptr<Mesh<LightVolumeVertex>> CreateSphere(ID3D11Device* device, u32 rings
 		}
 	}
 
-	return make_shared<Mesh<LightVolumeVertex>>(device, vertices, indices);
+	return make_shared<Mesh<SimplePositionVertex>>(device, vertices, indices);
+}
+
+shared_ptr<AquaXP::Mesh<ScreenQuadVertex>> AquaXP::CreateFullScreenQuad(ID3D11Device* device)
+{
+	vector<ScreenQuadVertex> vertices = {
+		{ .m_position = XMFLOAT3(-1.0f, +1.0f, +0.0f), .m_texCoords = XMFLOAT2(0, 0) },
+		{ .m_position = XMFLOAT3(+1.0f, +1.0f, +0.0f), .m_texCoords = XMFLOAT2(1, 0) },
+		{ .m_position = XMFLOAT3(+1.0f, -1.0f, +0.0f), .m_texCoords = XMFLOAT2(1, 1) },
+		{ .m_position = XMFLOAT3(-1.0f, -1.0f, +0.0f), .m_texCoords = XMFLOAT2(0, 1) },
+	};
+	vector<UINT> indices = {
+		0, 1, 2,
+		0, 2, 3
+	};
+	return make_shared<Mesh<ScreenQuadVertex>>(device, vertices, indices);
 }

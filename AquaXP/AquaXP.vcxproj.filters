@@ -97,6 +97,9 @@
     <Filter Include="Header Files\API\State">
       <UniqueIdentifier>{e0de366c-b11a-45ec-a2ab-9de33a9413c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Framework">
+      <UniqueIdentifier>{3c3317cc-b106-40e0-9e66-a3ff3a0c0e40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -200,6 +203,9 @@
     </ClInclude>
     <ClInclude Include="RasterizerState.h">
       <Filter>Header Files\API\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Result.h">
+      <Filter>Header Files\Framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

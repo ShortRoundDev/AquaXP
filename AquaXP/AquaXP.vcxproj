@@ -178,6 +178,7 @@
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="RegisterAction.h" />
+    <ClInclude Include="Result.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="ShaderHelper.h" />
     <ClInclude Include="Shapes.h" />

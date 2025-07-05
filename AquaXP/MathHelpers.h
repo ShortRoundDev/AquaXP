@@ -6,8 +6,7 @@ namespace AquaXP
     {
         CopyMemory(&invWorld, &world, sizeof(DirectX::XMMATRIX));
         invWorld.r[3] = DirectX::XMVectorSet(0, 0, 0, 1.0f);
-        DirectX::XMVECTOR determinant = DirectX::XMMatrixDeterminant(invWorld);
-        invWorld = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(&determinant, invWorld));
+        invWorld = DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(nullptr, invWorld));
     }
 
     inline DirectX::XMMATRIX InverseTranspose(DirectX::XMMATRIX const& world)

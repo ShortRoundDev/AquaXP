@@ -8,6 +8,7 @@ namespace AquaXP
     {
         DirectX::XMMATRIX view;
         DirectX::XMMATRIX projection;
+        DirectX::XMMATRIX inverseViewProjection;
         DirectX::XMVECTOR pos;
     };
 
@@ -132,6 +133,12 @@ namespace AquaXP
                 break;
             }
             }
+
+            m_cameraBuffer.inverseViewProjection = XMMatrixInverse(
+                nullptr,
+                XMMatrixMultiply(m_cameraBuffer.view, m_cameraBuffer.projection)
+            );
+
             m_cameraBuffer.pos = m_pos;
         }
 

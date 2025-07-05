@@ -2,9 +2,12 @@
 #include "Texture.h"
 #include "DepthStencilState.h"
 #include "RasterizerState.h"
+#include "Shapes.h"
 
 namespace AquaXP
 {
+#pragma warning( push )
+#pragma warning( disable: 4251 )
     struct AQUAXP_API RenderTarget
     {
         Texture const* renderTargets;
@@ -13,6 +16,7 @@ namespace AquaXP
         std::optional<DepthStencilState const*> depthStencilState;
         std::optional<UINT> stencilRef;
     };
+#pragma warning( pop )
 
     class Application;
     class Graphics
@@ -33,7 +37,6 @@ namespace AquaXP
         AQUAXP_API Microsoft::WRL::ComPtr<IDXGISwapChain> getSwapChain() const;
         AQUAXP_API DXGI_SAMPLE_DESC const& getMultiSamplingDesc() const;
         AQUAXP_API Texture const* getBackBuffer() const;
-        AQUAXP_API std::unique_ptr<Texture const> moveBackBuffer();
 
         AQUAXP_API void resetRenderTarget();
         AQUAXP_API void setRenderTarget(RenderTarget const& renderTarget);
@@ -63,7 +66,8 @@ namespace AquaXP
         AQUAXP_API void setDepthBuffer(Texture const* depthBuffer);
         AQUAXP_API Texture const* getDepthBuffer() const;
         AQUAXP_API Texture const* getRootDepthBuffer() const;
-        AQUAXP_API std::unique_ptr<Texture const> moveRootDepthBuffer();
+
+        AQUAXP_API Mesh<ScreenQuadVertex> const* getFullScreenQuad() const;
 
         AQUAXP_API void present() const;
 
@@ -96,6 +100,8 @@ namespace AquaXP
         std::unique_ptr<Texture const> m_rootDepthBuffer;
         std::unique_ptr<DepthStencilState const> m_rootDepthStencilState;
         std::unique_ptr<RasterizerState const> m_rootRasterizerState;
+
+        std::shared_ptr<Mesh<ScreenQuadVertex>> m_fullScreenQuad;
 
         using Initializer = bool(Graphics::*)(Application* application);
         bool initWaterfall(

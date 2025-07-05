@@ -142,7 +142,7 @@ namespace AquaXP
             }
 
             D3D11_BUFFER_DESC indexBufferDesc = {
-                .ByteWidth = static_cast<UINT>(indexCount * sizeof(T)),
+                .ByteWidth = static_cast<UINT>(indexCount * sizeof(UINT)),
                 .Usage = D3D11_USAGE_DEFAULT,
                 .BindFlags = D3D11_BIND_INDEX_BUFFER,
                 .CPUAccessFlags = 0,

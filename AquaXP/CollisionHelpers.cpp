@@ -7,6 +7,8 @@ using namespace std;
 
 constexpr static f32 EPSILON = 1e-6f;
 
+#pragma warning( push )
+#pragma warning( disable: 4715 )
 XMFLOAT2 Project2D(XMVECTOR const& v, i32 axis)
 {
     switch (axis)
@@ -19,6 +21,7 @@ XMFLOAT2 Project2D(XMVECTOR const& v, i32 axis)
         return XMFLOAT2(XMVectorGetX(v), XMVectorGetY(v));
     }
 }
+#pragma warning( pop )
 
 f32 SignedArea(XMFLOAT2 const& a, XMFLOAT2 const& b, XMFLOAT2 const& p)
 {

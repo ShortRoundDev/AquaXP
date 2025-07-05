@@ -2,7 +2,8 @@
 
 namespace AquaXP
 {
-
+#pragma warning( push )
+#pragma warning( disable: 4251 )
 	struct DepthStencilOpDesc {
 		std::optional<D3D11_STENCIL_OP> stencilFailOp;
 		std::optional<D3D11_STENCIL_OP> stencilDepthFailOp;
@@ -21,14 +22,15 @@ namespace AquaXP
 		std::optional<DepthStencilOpDesc> frontFace;
 		std::optional<DepthStencilOpDesc> backFace;
 	};
+#pragma warning( pop )
 
 
 	class DepthStencilState
 	{
 	public:
-		DepthStencilState(ID3D11Device* device, DepthStencilStateDesc const& depthStencilStateDesc);
-		DepthStencilState(ID3D11Device* device);
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> getDepthStencilState() const;
+		AQUAXP_API DepthStencilState(ID3D11Device* device, DepthStencilStateDesc const& depthStencilStateDesc);
+		AQUAXP_API DepthStencilState(ID3D11Device* device);
+		AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DepthStencilState> getDepthStencilState() const;
 
 	private:
 		bool m_status;

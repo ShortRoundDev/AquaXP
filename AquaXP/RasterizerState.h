@@ -2,6 +2,8 @@
 
 namespace AquaXP
 {
+#pragma warning( push )
+#pragma warning( disable: 4251 )
 	struct RasterizerStateDesc
 	{
 		std::optional<D3D11_FILL_MODE> fillMode;
@@ -15,14 +17,15 @@ namespace AquaXP
 		std::optional<BOOL> multisampleEnable;
 		std::optional<BOOL> antialiasedLineEnable;
 	};
+#pragma warning( pop )
 
 	class RasterizerState
 	{
 	public:
-		RasterizerState(ID3D11Device* device, RasterizerStateDesc const& stateDesc);
-		RasterizerState(ID3D11Device* device);
+		AQUAXP_API RasterizerState(ID3D11Device* device, RasterizerStateDesc const& stateDesc);
+		AQUAXP_API RasterizerState(ID3D11Device* device);
 
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> getRasterizerState() const;
+		AQUAXP_API Microsoft::WRL::ComPtr<ID3D11RasterizerState> getRasterizerState() const;
 	private:
 		bool m_status;
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;

@@ -21,6 +21,13 @@ namespace AquaXP
         BorderW      = 0b0001000000000000,
         ClampW       = 0b0010000000000000,
         MirrorOnceW  = 0b0100000000000000,
+
+        WrapAll = WrapU | WrapV | WrapW,
+        MirrorAll = MirrorU | MirrorV | MirrorW,
+        BorderAll = BorderU | BorderV | BorderW,
+        ClampAll = ClampU | ClampV | ClampW,
+        MirrorOnceAll = MirrorOnceU | MirrorOnceV | MirrorOnceW
+
     };
 
     class Sampler
