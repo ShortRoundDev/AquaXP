@@ -443,6 +443,20 @@ Result<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>> AquaXP::CreateDepthStenci
     return depthStencilView;
 }
 
+Result<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>> AquaXP::CreateRenderTargetView(
+    ID3D11Device* device,
+    ID3D11Texture2D* texture,
+    D3D11_RENDER_TARGET_VIEW_DESC const& desc
+)
+{
+    ComPtr<ID3D11RenderTargetView> renderTargetView = nullptr;
+    if (FAILED(device->CreateRenderTargetView(texture, &desc, &renderTargetView)))
+    {
+        return ErrorCode::RTVCreationFailed;
+    }
+    return renderTargetView;
+}
+
 Result<Microsoft::WRL::ComPtr<ID3D11Texture2D>> AquaXP::CreateTexture2D(
     ID3D11Device* device,
     D3D11_TEXTURE2D_DESC const& desc
@@ -520,6 +534,70 @@ Result<Texture> AquaXP::CreateDepthTarget(
         shaderResourceView,
         depthStencilView,
         nullptr,
+        static_cast<D3D11_BIND_FLAG>(desc.BindFlags)
+    );
+}
+
+Result<Texture> AquaXP::CreateRenderTarget(
+    ID3D11Device* device,
+    u32 width,
+    u32 height,
+    DXGI_SAMPLE_DESC sampleDesc,
+    bool isSrv = true,
+    DXGI_FORMAT format
+)
+{
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView = nullptr;
+
+    D3D11_TEXTURE2D_DESC desc = { };
+    ZeroMemory(&desc, sizeof(desc));
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = format;
+    desc.SampleDesc = sampleDesc;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_RENDER_TARGET | (isSrv ? D3D11_BIND_SHADER_RESOURCE : 0);
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+
+    auto textureResult = CreateTexture2D(device, desc);
+    if (auto error = errorOpt(textureResult))
+    {
+        return error.value();
+    }
+
+    auto texture = get(textureResult);
+
+    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = { };
+    ZeroMemory(&rtvDesc, sizeof(D3D11_RENDER_TARGET_VIEW_DESC));
+    rtvDesc.Format = format;
+    rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
+
+    auto rtvResult = CreateRenderTargetView(device, texture.Get(), rtvDesc);
+    if (auto error = errorOpt(rtvResult))
+    {
+        return error.value();
+    }
+
+    auto rtv = get(rtvResult);
+
+    if (isSrv)
+    {
+        auto srvResult = CreateShaderResourceView(device, texture.Get());
+        if (auto error = errorOpt(srvResult))
+        {
+            return error.value();
+        }
+        shaderResourceView = get(srvResult);
+    }
+
+    return Texture(
+        texture,
+        shaderResourceView,
+        nullptr,
+        rtv,
         static_cast<D3D11_BIND_FLAG>(desc.BindFlags)
     );
 }

@@ -113,28 +113,43 @@ namespace AquaXP
         bool initializeResources(ID3D11Device* device, D3D11_BIND_FLAG flags);
     };
 
-    Result<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> CreateShaderResourceView(
+    AQUAXP_API Result<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> CreateShaderResourceView(
         ID3D11Device* device,
         ID3D11Texture2D* texture,
         std::optional<D3D11_SHADER_RESOURCE_VIEW_DESC> desc = std::nullopt
     );
 
-    Result<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>> CreateDepthStencilView(
+    AQUAXP_API Result<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>> CreateDepthStencilView(
         ID3D11Device* device,
         ID3D11Texture2D* texture,
         D3D11_DEPTH_STENCIL_VIEW_DESC const& desc
     );
 
-    Result<Microsoft::WRL::ComPtr<ID3D11Texture2D>> CreateTexture2D(
+    AQUAXP_API Result<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>> CreateRenderTargetView(
+        ID3D11Device* device,
+        ID3D11Texture2D* texture,
+        D3D11_RENDER_TARGET_VIEW_DESC const& desc
+    );
+
+    AQUAXP_API Result<Microsoft::WRL::ComPtr<ID3D11Texture2D>> CreateTexture2D(
         ID3D11Device* device,
         D3D11_TEXTURE2D_DESC const& desc
     );
 
-    Result<Texture> CreateDepthTarget(
+    AQUAXP_API Result<Texture> CreateDepthTarget(
         ID3D11Device* device,
         u32 width,
         u32 height,
         DXGI_SAMPLE_DESC sampleDesc,
         bool isSrv = true
+    );
+
+    AQUAXP_API Result<Texture> CreateRenderTarget(
+        ID3D11Device* device,
+        u32 width,
+        u32 height,
+        DXGI_SAMPLE_DESC sampleDesc,
+        bool isSrv = true,
+        DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM
     );
 }
