@@ -152,4 +152,10 @@ namespace AquaXP
         bool isSrv = true,
         DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM
     );
+
+    AQUAXP_API Result<Texture> LoadTextureFromFile(
+        ID3D11Device* device,
+        ID3D11DeviceContext* context,
+        std::string const& path
+    );
 }

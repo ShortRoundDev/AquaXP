@@ -9,7 +9,7 @@ namespace AquaXP
 		DirectX::XMFLOAT3 m_position;
 	};
 
-	struct ScreenQuadVertex
+	struct alignas(16) ScreenQuadVertex
 	{
 		DirectX::XMFLOAT3 m_position;
 		DirectX::XMFLOAT2 m_texCoords;

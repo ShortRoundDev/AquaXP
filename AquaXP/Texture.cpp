@@ -543,7 +543,7 @@ Result<Texture> AquaXP::CreateRenderTarget(
     u32 width,
     u32 height,
     DXGI_SAMPLE_DESC sampleDesc,
-    bool isSrv = true,
+    bool isSrv,
     DXGI_FORMAT format
 )
 {
@@ -599,5 +599,47 @@ Result<Texture> AquaXP::CreateRenderTarget(
         nullptr,
         rtv,
         static_cast<D3D11_BIND_FLAG>(desc.BindFlags)
+    );
+}
+
+Result<Texture> AquaXP::LoadTextureFromFile(
+    ID3D11Device* device,
+    ID3D11DeviceContext* context,
+    std::string const& path
+)
+{
+    std::wstring wPath;
+    if (!mbStrToWideChar(path, wPath))
+    {
+        return ErrorCode::FileNotFound;
+    }
+    ComPtr<ID3D11Resource> buffer;
+    ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+    if (FAILED(CreateWICTextureFromFileEx(
+        device,
+        context,
+        wPath.c_str(),
+        0L,
+        D3D11_USAGE_DEFAULT,
+        D3D11_BIND_SHADER_RESOURCE,
+        0,
+        D3D11_RESOURCE_MISC_GENERATE_MIPS,
+        DirectX::WIC_LOADER_FLAGS::WIC_LOADER_FORCE_RGBA32,
+        buffer.GetAddressOf(),
+        shaderResourceView.GetAddressOf()
+    )))
+    {
+        return ErrorCode::WICError;
+    }
+
+    ComPtr<ID3D11Texture2D> texture;
+    buffer.As(&texture);
+
+    return Texture(
+        texture,
+        shaderResourceView,
+        nullptr,
+        nullptr,
+        D3D11_BIND_SHADER_RESOURCE
     );
 }

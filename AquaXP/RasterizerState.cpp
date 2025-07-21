@@ -11,7 +11,7 @@ RasterizerState::RasterizerState(ID3D11Device* device, RasterizerStateDesc const
 	D3D11_RASTERIZER_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 
-	desc.AntialiasedLineEnable = stateDesc.antialiasedLineEnable.value_or(FALSE);
+	desc.AntialiasedLineEnable = stateDesc.antialiasedLineEnable.value_or(TRUE);
 	desc.CullMode = stateDesc.cullMode.value_or(D3D11_CULL_BACK);
 	desc.DepthBias = stateDesc.depthBias.value_or(0);
 	desc.DepthBiasClamp = stateDesc.depthBiasClamp.value_or(0.0f);

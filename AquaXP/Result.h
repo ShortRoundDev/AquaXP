@@ -11,7 +11,10 @@ namespace AquaXP
 		Texture2DCreationFailed,
 		SRVCreationFailed,
 		DSVCreationFailed,
-		RTVCreationFailed
+		RTVCreationFailed,
+		WICError,
+		// File related codes
+		FileNotFound
 	};
 
 	template<typename T>
