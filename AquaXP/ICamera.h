@@ -127,7 +127,10 @@ namespace AquaXP
             {
                 m_cameraBuffer.projection = DirectX::XMMatrixTranspose(
                     DirectX::XMMatrixPerspectiveFovLH(
-                        m_fov, m_width / m_height, m_nearZ, m_farZ
+                        m_fov,
+                        m_width / m_height,
+                        m_nearZ,
+                        m_farZ
                     )
                 );
                 break;

@@ -46,4 +46,27 @@ namespace AquaXP
     private:
         Microsoft::WRL::ComPtr<ID3D11PixelShader> m_shader;
     };
+
+    template<template<typename> typename Alloc = std::allocator>
+    Result<PixelShader<Alloc>> LoadPixelShader(ID3D11Device* device,
+        std::wstring const& path
+    )
+    {
+        Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
+        
+        std::shared_ptr<u8[]> byteCode;
+        sz byteCodeSize;
+
+        if (!InitShaderCode<ID3D11PixelShader, Alloc>(
+            &ID3D11Device::CreatePixelShader,
+            device,
+            path,
+            byteCode,
+            byteCodeSize,
+            shader.GetAddressOf()
+        ))
+        {
+            return ErrorCode::DepthBufferCreationFailed
+        }
+    }
 }

@@ -543,7 +543,7 @@ Result<Texture> AquaXP::CreateRenderTarget(
     u32 width,
     u32 height,
     DXGI_SAMPLE_DESC sampleDesc,
-    bool isSrv = true,
+    bool isSrv,
     DXGI_FORMAT format
 )
 {

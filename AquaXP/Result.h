@@ -6,12 +6,27 @@ namespace AquaXP
 	{
 		// Framework codes
 		ReBoxFailed,
+		// D3D11 HRESULT codes
+		D3D11ErrorFileNotFound,
+		D3D11ErrorTooManyUniqueStateObjects,
+		D3D11ErrorTooManyUniqueViewObjects,
+		D3D11ErrorDeferredContextMapWithoutInitialDiscard,
+		D3DERRInvalidCall,
+		D3DERRWasStillDrawing,
+		EFail,
+		EInvalidArg,
+		EOutOfMemory,
+		ENotImplemented,
+		SFalse,
+		// File Errors
+		FileError,
 		// Texture Codes
 		DepthBufferCreationFailed,
 		Texture2DCreationFailed,
 		SRVCreationFailed,
 		DSVCreationFailed,
 		RTVCreationFailed
+		// Shader codes
 	};
 
 	template<typename T>

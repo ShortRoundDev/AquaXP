@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Result.h"
 #include "FileHelpers.h"
 
 namespace AquaXP
@@ -16,7 +17,7 @@ namespace AquaXP
         typename T,
         template<typename> typename ByteAlloc = std::allocator
     >
-    bool InitShaderCode(
+    Result<bool> InitShaderCode(
         Initializer<T> initializer,
         ID3D11Device* device,
         std::wstring const& path,
@@ -32,7 +33,7 @@ namespace AquaXP
 
         if (!TryReadFile<ByteAlloc>((WCHAR*)path.c_str(), byteCode, byteCodeSize))
         {
-            return false;
+            return ErrorCode::FileError;
         }
 
         HRESULT res;
