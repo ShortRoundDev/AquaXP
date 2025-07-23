@@ -136,7 +136,12 @@ int main()
     VertexShader vs(device, L"WorldVertex.cso", layoutBuilder.build());
     vs.use(context);
 
-    PixelShader ps(device, L"WorldPixel.cso");
+    auto shaderRes = LoadPixelShader(device, L"WorldPixel.cso");
+    if (!isOk(shaderRes))
+    {
+        std::cerr << "Failed to create pixel shader" << std::endl;
+    }
+    auto ps = get(shaderRes);
     ps.use(context);
 
     /* Create a sampler with default linear filtering settings */

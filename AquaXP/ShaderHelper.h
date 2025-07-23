@@ -45,7 +45,7 @@ namespace AquaXP
         );
         if (FAILED(res))
         {
-            return false;
+            return HRToError(res);
         }
         return true;
     }

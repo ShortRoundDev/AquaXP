@@ -5,6 +5,7 @@ namespace AquaXP
 	enum class ErrorCode
 	{
 		// Framework codes
+		UnknownError,
 		ReBoxFailed,
 		// D3D11 HRESULT codes
 		D3D11ErrorFileNotFound,
@@ -39,8 +40,8 @@ namespace AquaXP
 		DXGIErrorSDKComponentMissing,
 		DXGIErrorSessionDisconnected,
 		DXGIErrorUnsupported,
-		DXGIERrorWaitTimeout,
-		DXIGErrorWasStillDrawing,
+		DXGIErrorWaitTimeout,
+		DXGIErrorWasStillDrawing,
 		// File Errors
 		FileError,
 		// Texture Codes

@@ -8,29 +8,10 @@ namespace AquaXP
     template<template<typename> typename Alloc = std::allocator>
     class PixelShader
     {
-        using ByteAllocType = Alloc<u8>;
-        using ByteAllocTraits = std::allocator_traits<ByteAllocType>;
-        static_assert(std::is_same_v<typename ByteAllocTraits::value_type, u8>,
-            "Byte Allocator must be for u8 type");
     public:
-        PixelShader(
-            ID3D11Device* device,
-            std::wstring const& path
-        )
+        PixelShader(Microsoft::WRL::ComPtr<ID3D11PixelShader> shader) : m_shader(shader)
         {
-            std::shared_ptr<u8[]> byteCode;
-            sz byteCodeSize;
-            if (!InitShaderCode<ID3D11PixelShader, Alloc>(
-                &ID3D11Device::CreatePixelShader,
-                device,
-                path,
-                byteCode,
-                byteCodeSize,
-                m_shader.GetAddressOf()
-            ))
-            {
-                return;
-            }
+
         }
 
         void use(ID3D11DeviceContext* context) const
@@ -52,21 +33,29 @@ namespace AquaXP
         std::wstring const& path
     )
     {
+        using ByteAllocType = Alloc<u8>;
+        using ByteAllocTraits = std::allocator_traits<ByteAllocType>;
+        static_assert(std::is_same_v<typename ByteAllocTraits::value_type, u8>,
+            "Byte Allocator must be for u8 type");
+
         Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
         
         std::shared_ptr<u8[]> byteCode;
         sz byteCodeSize;
 
-        if (!InitShaderCode<ID3D11PixelShader, Alloc>(
+        auto shaderInitResult = InitShaderCode<ID3D11PixelShader, Alloc>(
             &ID3D11Device::CreatePixelShader,
             device,
             path,
             byteCode,
             byteCodeSize,
             shader.GetAddressOf()
-        ))
+        );
+        if(!isOk(shaderInitResult))
         {
-            return ErrorCode::DepthBufferCreationFailed
+            return error(shaderInitResult);
         }
+
+        return PixelShader(shader);
     }
 }
