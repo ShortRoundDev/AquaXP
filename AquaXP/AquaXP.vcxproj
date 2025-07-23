@@ -211,6 +211,7 @@
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="RasterizerState.cpp" />
+    <ClCompile Include="Result.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="StepTimer.cpp" />

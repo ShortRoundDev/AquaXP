@@ -11,13 +11,36 @@ namespace AquaXP
 		D3D11ErrorTooManyUniqueStateObjects,
 		D3D11ErrorTooManyUniqueViewObjects,
 		D3D11ErrorDeferredContextMapWithoutInitialDiscard,
-		D3DERRInvalidCall,
-		D3DERRWasStillDrawing,
 		EFail,
 		EInvalidArg,
 		EOutOfMemory,
 		ENotImplemented,
 		SFalse,
+		// DXGI Error Codes
+		DXGIErrorAccessDenied,
+		DXGIErrorAccessLost,
+		DXGIErrorAlreadyExists,
+		DXGIErrorCannotProtectContent,
+		DXGIErrorDeviceHung,
+		DXGIErrorDeviceRemoved,
+		DXGIErrorDeviceReset,
+		DXGIErrorDriverInternalError,
+		DXGIErrorFrameStatisticsDisjoint,
+		DXGIErrorGraphicsVidPNSourceInUse,
+		DXGIErrorInvalidCall,
+		DXGIErrorMoreData,
+		DXGIErrorNameAlreadyExists,
+		DXGIErrorNonexclusive,
+		DXGIErrorNotCurrentlyAvailable,
+		DXGIErrorNotFound,
+		DXGIErrorRemoteClientDisconnected,
+		DXGIErrorRemoteOutOfMemory,
+		DXGIErrorRestrictToOutputStale,
+		DXGIErrorSDKComponentMissing,
+		DXGIErrorSessionDisconnected,
+		DXGIErrorUnsupported,
+		DXGIERrorWaitTimeout,
+		DXIGErrorWasStillDrawing,
 		// File Errors
 		FileError,
 		// Texture Codes
@@ -94,4 +117,5 @@ namespace AquaXP
 		return std::nullopt;
 	}
 	
+	AQUAXP_API ErrorCode HRToError(HRESULT hr);
 }
