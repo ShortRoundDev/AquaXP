@@ -7,6 +7,7 @@ namespace AquaXP
 		// Framework codes
 		UnknownError,
 		ReBoxFailed,
+		WStringConversionFailure,
 		// D3D11 HRESULT codes
 		D3D11ErrorFileNotFound,
 		D3D11ErrorTooManyUniqueStateObjects,

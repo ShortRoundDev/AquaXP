@@ -2,17 +2,15 @@
 
 #include <memory>
 #include "ShaderHelper.h"
+#include "StringHelpers.h"
 
 namespace AquaXP
 {
-    template<template<typename> typename Alloc = std::allocator>
     class PixelShader
     {
     public:
         PixelShader(Microsoft::WRL::ComPtr<ID3D11PixelShader> shader) : m_shader(shader)
-        {
-
-        }
+        { }
 
         void use(ID3D11DeviceContext* context) const
         {
@@ -29,7 +27,7 @@ namespace AquaXP
     };
 
     template<template<typename> typename Alloc = std::allocator>
-    Result<PixelShader<Alloc>> LoadPixelShader(ID3D11Device* device,
+    Result<PixelShader> LoadPixelShader(ID3D11Device* device,
         std::wstring const& path
     )
     {
@@ -57,5 +55,24 @@ namespace AquaXP
         }
 
         return PixelShader(shader);
+    }
+
+    template<template<typename> typename Alloc = std::allocator>
+    Result<PixelShader> LoadPixelShader(ID3D11Device* device,
+        std::string const& path
+    )
+    {
+        using ByteAllocType = Alloc<u8>;
+        using ByteAllocTraits = std::allocator_traits<ByteAllocType>;
+        static_assert(std::is_same_v<typename ByteAllocTraits::value_type, u8>,
+            "Byte Allocator must be for u8 type");
+
+        std::wstring wpath;
+        if (!mbStrToWideChar(path, wpath))
+        {
+            return ErrorCode::WStringConversionFailure;
+        }
+
+        return LoadPixelShader(device, wpath);
     }
 }

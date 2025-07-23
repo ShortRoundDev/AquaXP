@@ -7,15 +7,18 @@
 
 namespace AquaXP
 {
-    template<template<typename> typename Alloc = std::allocator>
     class VertexShader
     {
-        using ByteAllocType = Alloc<u8>;
-        using ByteAllocTraits = std::allocator_traits<ByteAllocType>;
-        static_assert(std::is_same_v<typename ByteAllocTraits::value_type, u8>,
-            "Byte Allocator must be for u8 type");
-
     public:
+
+        VertexShader(
+            Microsoft::WRL::ComPtr<ID3D11VertexShader> shader,
+            Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout
+        ) :
+            m_shader(shader),
+            m_inputLayout(inputLayout)
+        { }
+
         VertexShader(
             ID3D11Device* device,
             std::wstring const& path,
@@ -82,28 +85,49 @@ namespace AquaXP
         Microsoft::WRL::ComPtr<ID3D11VertexShader> m_shader;
         Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 
-        bool initInputLayout(
-            ID3D11Device* device,
-            D3D11_INPUT_ELEMENT_DESC const* inputLayoutElements,
-            UINT numInputLayoutElements,
-            u8* byteCode,
-            sz byteCodeLength
-        )
-        {
-            auto res = device->CreateInputLayout(
-                inputLayoutElements,
-                numInputLayoutElements,
-                byteCode,
-                byteCodeLength,
-                m_inputLayout.GetAddressOf()
-            );
+    };
 
-            if (FAILED(res))
-            {
-                return false;
-            }
-            return true;
+    template<template<typename> typename Alloc = std::allocator>
+    Result<VertexShader> LoadVertexShader(
+        ID3D11Device* device,
+        std::wstring const& path,
+        D3D11_INPUT_ELEMENT_DESC const* inputLayoutElements,
+        UINT numInputLayoutElements
+    )
+    {
+        using ByteAllocType = Alloc<u8>;
+        using ByteAllocTraits = std::allocator_traits<ByteAllocType>;
+        static_assert(std::is_same_v<typename ByteAllocTraits::value_type, u8>,
+            "Byte Allocator must be for u8 type");
+        
+        Microsoft::WRL::ComPtr<ID3D11VertexShader> shader;
+
+        std::shared_ptr<u8[]> byteCode;
+        sz byteCodeSize;
+
+        auto shaderInitResult = InitShaderCode<ID3D11VertexShader, Alloc>(
+            &ID3D11Device::CreateVertexShader,
+            device,
+            path,
+            byteCode,
+            byteCodeSize,
+            shader.GetAddressOf()
+        );
+
+        if(!isOk(shaderInitResult))
+        {
+            return error(shaderInitResult);
         }
 
-    };
+        auto inputInitResult = initInputLayout(
+            device,
+            inputLayoutElements,
+            numInputLayoutElements,
+            byteCode.get(),
+            byteCodeSize
+        );
+        {
+            return;
+        }
+    }
 }
