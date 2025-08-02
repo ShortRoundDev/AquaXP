@@ -19,13 +19,17 @@
 #include "Types.h"
 #include "Slots.h"
 #include "Concepts.h"
-
+#include "Common.h"
+#include "Result.h"
 
 #include "ICamera.h"
 #include "NoclipCameraController.h"
 #include "Application.h"
 #include "Graphics.h"
 #include "Texture.h"
+#include "TextureBuilder.h"
+#include "CubeMap.h"
+#include "CubeMapBuilder.h"
 #include "VertexShader.h"
 #include "PixelShader.h"
 #include "Mesh.h"

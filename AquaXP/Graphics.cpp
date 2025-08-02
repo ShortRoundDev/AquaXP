@@ -193,7 +193,7 @@ Result<tuple<ComPtr<IDXGISwapChain>, DXGI_SAMPLE_DESC>> CreateSwapChain(
     return make_tuple(swapchain, swapchainDesc.SampleDesc);
 }
 
-Result<Texture> CreateBackBufferRenderTarget(IDXGISwapChain* swapChain, ID3D11Device* device)
+Result<Texture> CreateBackBufferRenderTarget(IDXGISwapChain* swapChain, ID3D11Device* device, ID3D11DeviceContext* context)
 {
     ComPtr<ID3D11Texture2D> backBuffer;
     auto backBufferRes = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf());
@@ -205,7 +205,7 @@ Result<Texture> CreateBackBufferRenderTarget(IDXGISwapChain* swapChain, ID3D11De
     auto backBufferTextureRes = TextureBuilder()
         .withTexture(backBuffer)
         .withRTV()
-        .build(device);
+        .build(device, context);
     if (!isOk(backBufferTextureRes))
     {
         return error(backBufferTextureRes);
@@ -447,7 +447,7 @@ void Graphics::present() const
     m_swapChain->Present(1, 0);
 }
 
-Result<unique_ptr<Graphics>> AquaXP::CreateGraphics(u16 width, u16 height, HWND hwnd, bool fullscreen, bool vsync)
+Result<Graphics> AquaXP::CreateGraphics(u16 width, u16 height, HWND hwnd, bool fullscreen, bool vsync)
 {
     auto factoryRes = CreateDXGIFactory();
     if (!isOk(factoryRes))
@@ -477,7 +477,7 @@ Result<unique_ptr<Graphics>> AquaXP::CreateGraphics(u16 width, u16 height, HWND 
     }
 
     auto [swapChain, samplingDesc] = get(swapChainRes);
-    auto backBufferRes = CreateBackBufferRenderTarget(swapChain.Get(), device.Get());
+    auto backBufferRes = CreateBackBufferRenderTarget(swapChain.Get(), device.Get(), context.Get());
     if (!isOk(backBufferRes))
     {
         return error(backBufferRes);
@@ -503,7 +503,7 @@ Result<unique_ptr<Graphics>> AquaXP::CreateGraphics(u16 width, u16 height, HWND 
         return error(fullScreenQuadRes);
     }
 
-    return make_unique<Graphics>(
+    return Graphics(
         width,
         height,
         dxgiFactory,

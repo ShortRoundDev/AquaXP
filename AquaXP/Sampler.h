@@ -44,4 +44,5 @@ namespace AquaXP
     using Sampler = Microsoft::WRL::ComPtr<ID3D11SamplerState>;
 
     AQUAXP_API Result<Sampler> CreateSampler(ID3D11Device* device, SamplerOptions const& options = SamplerOptions());
+    AQUAXP_API void UseSampler(ID3D11DeviceContext* context, Sampler const& sampler, u32 slot = 0, Bind bindStage = Bind::PS);
 }

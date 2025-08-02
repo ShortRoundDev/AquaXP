@@ -54,4 +54,6 @@ namespace AquaXP
 
         return LoadPixelShader(device, wpath);
     }
+
+    AQUAXP_API void UsePixelShader(ID3D11DeviceContext* context, PixelShader const& ps);
 }

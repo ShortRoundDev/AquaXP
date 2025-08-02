@@ -24,7 +24,7 @@ namespace AquaXP
         LookRight = 9
     };
 
-    constexpr i32 BeginActions = 16;
+    constexpr i32 BeginActions = 128;
 
     struct Window
     {
@@ -114,13 +114,21 @@ namespace AquaXP
     public:
 
         AQUAXP_API Application(
-            Window const& window,
-            std::unique_ptr<Graphics> graphics,
-            StepTimer const& stepTimer,
-            DirectX::Keyboard const& keyboard
+            Window window,
+            Graphics graphics,
+            StepTimer stepTimer,
+            DirectX::Keyboard keyboard,
+            DirectX::Mouse mouse,
+            DirectX::GamePad gamePad,
+            ApplicationOptions const& options
         );
 
         AQUAXP_API ~Application() = default;
+        AQUAXP_API Application& operator=(Application&&) = default;
+        AQUAXP_API Application(Application&&) = default;
+        
+        Application(const Application&) = delete;
+        Application& operator=(const Application&) = delete;
 
         AQUAXP_API void run(
             std::function<void(Application*)> draw,
@@ -222,7 +230,7 @@ namespace AquaXP
         Window m_window;
 
         /* DirectX */
-        std::unique_ptr<Graphics> m_graphics;
+        Graphics m_graphics;
 
         /* DirectXTK */
         DirectX::Keyboard m_keyboard;
@@ -255,7 +263,7 @@ namespace AquaXP
         bool mouseButtonIsState(MouseButton button, DirectX::Mouse::ButtonStateTracker::ButtonState checkState) const;
     };
     
-    AQUAXP_API Result<unique_ptr<Application>> CreateApplication(u16 width, u16 height, WCHAR const* title, ApplicationOptions const& options = ApplicationOptions());
+    AQUAXP_API Result<Application> CreateApplication(u16 width, u16 height, WCHAR const* title, ApplicationOptions const& options = ApplicationOptions());
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);

@@ -64,15 +64,24 @@ optional<pair<shared_ptr<Mesh<Vertex>>, shared_ptr<Texture>>> loadMesh(Graphics 
         aiString texturePath;
         if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
         {
-            texture = make_shared<Texture>(graphics, "Assets/" + string(texturePath.C_Str()));
+            auto textureResult = (TextureBuilder())
+                .withTexture("Assets/" + string(texturePath.C_Str()))
+                .withSRV()
+                .build(device, context);
+
+            if (!isOk(textureResult))
+            {
+                return nullopt;
+            }
+            texture = make_shared<Texture>(get(move(textureResult)));
         }
     }
-    return make_pair(
-        make_shared<Mesh<Vertex>>(
-            device,
-            vertices,
-            indices
-        ),
+    auto meshResult = CreateMesh<Vertex>(device, move(vertices), move(indices));
+    if (!isOk(meshResult))
+    {
+        return nullopt;
+    }
+    return make_pair(make_shared<Mesh<Vertex>>(get(move(meshResult))),
         texture
     );
 }
@@ -87,7 +96,14 @@ int main()
 {
 
     /* Initialize Window and DirectX infrastructure */
-    Application app(800, 600, L"AquaGlass", false, false, false, true);
+    Result<Application> appResult = CreateApplication(800, 600, L"AquaGlass", {
+        .enableTitleBar = false
+    });
+    if (!isOk(appResult))
+    {
+        return 1;
+    }
+    auto app = get(move(appResult));
 
     /* Bind keys to actions */
     app.tryBindAction(DefaultActions::Forward, Keyboard::Keys::W);
@@ -133,7 +149,12 @@ int main()
         .addTexCoord();
 
     /* Load Shaders from precompiled CSO files. Vertex Shaders require the input layout */
-    VertexShader vs(device, L"WorldVertex.cso", layoutBuilder.build());
+    Result<VertexShader> vsResult = LoadVertexShader(device, L"WorldVertex.cso", layoutBuilder.build());
+    if (!isOk(vsResult))
+    {
+        return 2;
+    }
+    auto vs = get(vsResult);
     vs.use(context);
 
     auto shaderRes = LoadPixelShader(device, L"WorldPixel.cso");
@@ -142,22 +163,36 @@ int main()
         std::cerr << "Failed to create pixel shader" << std::endl;
     }
     auto ps = get(shaderRes);
-    ps.use(context);
+    UsePixelShader(context, ps);
 
     /* Create a sampler with default linear filtering settings */
-    Sampler sampler(device);
-    sampler.use(context);
+    auto samplerResult = CreateSampler(device);
+    if (!isOk(samplerResult))
+    {
+        return 5;
+    }
+    UseSampler(context, get(samplerResult));
 
     /* Create a CBuffer with necessary 3D projection projection and view matrices */
-    CBuffer<CameraBuffer> matrices(device, cameraContext.m_camera->getCameraBuffer());
+    auto matrixResult = CreateCBuffer<CameraBuffer>(device, cameraContext.m_camera->getCameraBuffer());
+    if (!isOk(matrixResult))
+    {
+        return 3;
+    }
+    auto matrices = get(matrixResult);
     matrices.bind(context, 0);
 
     /* Initialize model transform to identity matrix */
     XMMATRIX modelTransform = XMMatrixIdentity();
     /* Transformation matrix for the model being displayed */
-    CBuffer<Model> model(device, {
+    auto modelResult = CreateCBuffer<Model>(device, {
         .model = XMMatrixTranspose(modelTransform)
     });
+    if (!isOk(modelResult))
+    {
+        return 4;
+    }
+    auto model = get(modelResult);
     model.bind(context, 1);
     /* Time accumulator for rotation */
     f32 time = 0.0f;

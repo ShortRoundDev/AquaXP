@@ -1,16 +1,6 @@
 #pragma once
 namespace AquaXP
 {
-    enum CbufferBindStage
-    {
-        VS = 1,
-        PS = 2,
-        GS = 4,
-        HS = 8,
-        CS = 16,
-        DS = 32
-    };
-
     template<typename T>
     class CBuffer
     {
@@ -25,7 +15,7 @@ namespace AquaXP
         Result<Unit> bind(
             ID3D11DeviceContext* context,
             UINT slot = 0,
-            CbufferBindStage bindStage = (CbufferBindStage)(VS | PS)
+            Bind bind = Bind::VS | Bind::PS
         ) const
         {
             D3D11_MAPPED_SUBRESOURCE bufferResource;
@@ -45,37 +35,37 @@ namespace AquaXP
             void* localBuffer = (void*)bufferResource.pData;
             CopyMemory(localBuffer, &m_cBufferData, sizeof(T));
             context->Unmap(m_cBuffer.Get(), 0);
-            if (bindStage & VS)
+            if (HasFlag(bind, Bind::VS))
             {
                 context->VSSetConstantBuffers(
                     slot, 1, m_cBuffer.GetAddressOf()
                 );
             }
-            if (bindStage & PS)
+            if (HasFlag(bind, Bind::PS))
             {
                 context->PSSetConstantBuffers(
                     slot, 1, m_cBuffer.GetAddressOf()
                 );
             }
-            if (bindStage & GS)
+            if (HasFlag(bind, Bind::GS))
             {
                 context->GSSetConstantBuffers(
                     slot, 1, m_cBuffer.GetAddressOf()
                 );
             }
-            if (bindStage & HS)
+            if (HasFlag(bind, Bind::HS))
             {
                 context->HSSetConstantBuffers(
                     slot, 1, m_cBuffer.GetAddressOf()
                 );
             }
-            if (bindStage & CS)
+            if (HasFlag(bind, Bind::CS))
             {
                 context->CSSetConstantBuffers(
                     slot, 1, m_cBuffer.GetAddressOf()
                 );
             }
-            if (bindStage & DS)
+            if (HasFlag(bind, Bind::DS))
             {
                 context->DSSetConstantBuffers(
                     slot, 1, m_cBuffer.GetAddressOf()

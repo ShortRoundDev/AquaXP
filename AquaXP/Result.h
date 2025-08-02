@@ -66,7 +66,7 @@ namespace AquaXP
 	template<typename T>
 	using Result = std::variant<T, ErrorCode>;
 
-	struct Unit {};
+	struct Unit { };
 
 	template<typename T>
 	bool tryGet(Result<T> const& result, T& data)
@@ -110,7 +110,7 @@ namespace AquaXP
 	template<typename T>
 	Result<T> ok(T const& data)
 	{
-		return Result<T>(data);
+		return data;
 	}
 
 	template<typename T>
@@ -147,11 +147,24 @@ namespace AquaXP
 		{
 			return function();
 		}
-		catch(...)
+		catch (...)
 		{
 			return ErrorCode::InternalException;
 		}
 	}
-	
+
+	template<typename T, typename... Args>
+	Result<T> tryCreate(Args&& ...args)
+	{
+		try
+		{
+			return T(std::forward<Args>(args)...);
+		}
+		catch (...)
+		{
+			return ErrorCode::InternalException;
+		}
+	}
+
 	AQUAXP_API ErrorCode HRToError(HRESULT hr);
 }

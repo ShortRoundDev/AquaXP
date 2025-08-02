@@ -38,7 +38,7 @@ static D3D11_TEXTURE_ADDRESS_MODE getAddressMode(TextureAddressMode mode)
     }
 }
 
-Result<Sampler> CreateSampler(ID3D11Device* device, SamplerOptions const& options = SamplerOptions())
+Result<Sampler> AquaXP::CreateSampler(ID3D11Device* device, SamplerOptions const& options)
 {
     D3D11_SAMPLER_DESC samplerDesc;
     auto textureAddressMode = options.textureAddressMode.value_or(WrapAll);
@@ -79,4 +79,32 @@ Result<Sampler> CreateSampler(ID3D11Device* device, SamplerOptions const& option
         return HRToError(res);
     }
     return Sampler(samplerState);
+}
+
+AQUAXP_API void AquaXP::UseSampler(ID3D11DeviceContext* context, Sampler const& sampler, u32 slot, Bind bind)
+{
+    if (HasFlag(bind, Bind::VS))
+    {
+        context->VSSetSamplers(slot, 1, sampler.GetAddressOf());
+    }
+    if (HasFlag(bind, Bind::PS))
+    {
+        context->PSSetSamplers(slot, 1, sampler.GetAddressOf());
+    }
+    if (HasFlag(bind, Bind::GS))
+    {
+        context->GSSetSamplers(slot, 1, sampler.GetAddressOf());
+    }
+    if (HasFlag(bind, Bind::HS))
+    {
+        context->HSSetSamplers(slot, 1, sampler.GetAddressOf());
+    }
+    if (HasFlag(bind, Bind::CS))
+    {
+        context->CSSetSamplers(slot, 1, sampler.GetAddressOf());
+    }
+    if (HasFlag(bind, Bind::DS))
+    {
+        context->DSSetSamplers(slot, 1, sampler.GetAddressOf());
+    }
 }

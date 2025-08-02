@@ -37,7 +37,7 @@ namespace AquaXP
             RasterizerState rasterizerState,
             Mesh<ScreenQuadVertex> const& fullScreenQuad
         );
-        AQUAXP_API ~Graphics() = default;
+        //AQUAXP_API ~Graphics() = default;
 
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11Device> getDevice() const;
         AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DeviceContext> getContext() const;
@@ -111,5 +111,5 @@ namespace AquaXP
         std::unique_ptr<Mesh<ScreenQuadVertex> const> m_fullScreenQuad;
     };
 
-    AQUAXP_API Result<std::unique_ptr<Graphics>> CreateGraphics(u16 width, u16 height, HWND hwnd, bool fullscreen, bool vsync);
+    Result<Graphics> CreateGraphics(u16 width, u16 height, HWND hwnd, bool fullscreen, bool vsync);
 }

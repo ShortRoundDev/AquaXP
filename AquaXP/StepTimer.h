@@ -69,6 +69,7 @@ namespace AquaXP
             m_framesPerSecond = 0;
             m_framesThisSecond = 0;
             m_qpcSecondCounter = 0;
+            return Unit { };
         }
 
         // Update timer state, calling the specified Update function the appropriate number of times.
@@ -151,6 +152,7 @@ namespace AquaXP
                 m_framesThisSecond = 0;
                 m_qpcSecondCounter %= static_cast<uint64_t>(m_qpcFrequency.QuadPart);
             }
+            return Unit { };
         }
 
     private:

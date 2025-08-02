@@ -40,6 +40,7 @@
 #include "Concepts.h"
 #include "MathHelpers.h"
 #include "Result.h"
+#include "Common.h"
 
 
 #endif //PCH_H

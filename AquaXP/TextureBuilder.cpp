@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "TextureBuilder.h"
+#include "StringHelpers.h"
 
 using namespace AquaXP;
+using namespace std;
 
 TextureBuilder::TextureBuilder() :
 	m_texture(),
@@ -19,6 +21,28 @@ TextureBuilder& TextureBuilder::withTexture(Microsoft::WRL::ComPtr<ID3D11Texture
 
 TextureBuilder& TextureBuilder::withTexture(TextureOptions const& options)
 {
+	m_textureOptions = options;
+	return *this;
+}
+
+TextureBuilder& TextureBuilder::withTexture(string const& path, TextureOptions const& options)
+{
+	wstring wpath;
+	if (!mbStrToWideChar(path, wpath))
+	{
+		m_earlyError = ErrorCode::WStringConversionFailure;
+	}
+	else
+	{
+		m_path = wpath;
+	}
+	m_textureOptions = options;
+	return *this;
+}
+
+TextureBuilder& TextureBuilder::withTexture(wstring const& path, TextureOptions const& options)
+{
+	m_path = path;
 	m_textureOptions = options;
 	return *this;
 }
@@ -41,52 +65,77 @@ TextureBuilder& TextureBuilder::withDSV(DSVOptions const& options)
 	return *this;
 }
 
-Result<Texture> TextureBuilder::build(ID3D11Device* device)
+Result<Texture> TextureBuilder::build(ID3D11Device* device, ID3D11DeviceContext* context)
 {
-	if (!m_texture.has_value() && m_textureOptions.has_value())
+	if (m_earlyError.has_value())
 	{
-		auto textureOptions = m_textureOptions.value();
-		D3D11_TEXTURE2D_DESC desc = { };
-		ZeroMemory(&desc, sizeof(desc));
-		desc.Width = textureOptions.width;
-		desc.Height = textureOptions.height;
-		desc.MipLevels = textureOptions.mipLevels.value_or(1);
-		desc.ArraySize = textureOptions.arraySize.value_or(1);
-		desc.Format = textureOptions.format;
-		desc.SampleDesc = textureOptions.sampleDesc;
-		desc.Usage = textureOptions.usage.value_or(D3D11_USAGE_DEFAULT);
-		desc.CPUAccessFlags = textureOptions.cpuAccessFlags.value_or(0);
-		desc.MiscFlags = textureOptions.miscFlags.value_or(0);
-
-		if (textureOptions.bindFlags.has_value())
+		return error(m_earlyError.value());
+	}
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv = nullptr;
+	if (!m_texture.has_value())
+	{
+		UINT bindFlags = 0;
+		if (m_dsvOptions.has_value())
 		{
-			desc.BindFlags = textureOptions.bindFlags.value();
+			bindFlags |= D3D11_BIND_DEPTH_STENCIL;
 		}
-		else
+		if (m_rtvOptions.has_value())
 		{
-			UINT bindFlags = 0;
-			if (m_dsvOptions.has_value())
-			{
-				bindFlags |= D3D11_BIND_DEPTH_STENCIL;
-			}
-			if (m_rtvOptions.has_value())
-			{
-				bindFlags |= D3D11_BIND_RENDER_TARGET;
-			}
-			if (m_srvOptions.has_value())
-			{
-				bindFlags |= D3D11_BIND_SHADER_RESOURCE;
-			}
-			desc.BindFlags = bindFlags;
+			bindFlags |= D3D11_BIND_RENDER_TARGET;
+		}
+		if (m_srvOptions.has_value())
+		{
+			bindFlags |= D3D11_BIND_SHADER_RESOURCE;
 		}
 
-		auto textureResult = CreateTexture2D(device, desc);
-		if (!isOk(textureResult))
+		if (!m_path.has_value() && m_textureOptions.has_value())
 		{
-			return error(textureResult);
-		}
+			auto textureOptions = m_textureOptions.value();
+			D3D11_TEXTURE2D_DESC desc = { };
+			ZeroMemory(&desc, sizeof(desc));
+			desc.Width = textureOptions.width;
+			desc.Height = textureOptions.height;
+			desc.MipLevels = textureOptions.mipLevels.value_or(1);
+			desc.ArraySize = textureOptions.arraySize.value_or(1);
+			desc.Format = textureOptions.format;
+			desc.SampleDesc = textureOptions.sampleDesc;
+			desc.Usage = textureOptions.usage.value_or(D3D11_USAGE_DEFAULT);
+			desc.CPUAccessFlags = textureOptions.cpuAccessFlags.value_or(0);
+			desc.MiscFlags = textureOptions.miscFlags.value_or(D3D11_RESOURCE_MISC_GENERATE_MIPS);
+			desc.BindFlags = textureOptions.bindFlags.value_or(bindFlags);
 
-		m_texture = get(textureResult);
+			auto textureResult = CreateTexture2D(device, desc);
+			if (!isOk(textureResult))
+			{
+				return error(textureResult);
+			}
+
+			m_texture = get(textureResult);
+		}
+		else if (m_path.has_value())
+		{
+			Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+			auto options = m_textureOptions.value();
+			HRESULT res = CreateWICTextureFromFileEx(
+				device,
+				context,
+				m_path.value().c_str(),
+				0L,
+				options.usage.value_or(D3D11_USAGE_DEFAULT),
+				options.bindFlags.value_or(bindFlags),
+				options.cpuAccessFlags.value_or(0),
+				options.miscFlags.value_or(D3D11_RESOURCE_MISC_GENERATE_MIPS),
+				DirectX::WIC_LOADER_FLAGS::WIC_LOADER_FORCE_RGBA32,
+				resource.GetAddressOf(),
+				srv.GetAddressOf()
+			);
+			if (FAILED(res))
+			{
+				return ErrorCode::WICError;
+			}
+
+			resource.As(&m_texture.value());
+		}
 	}
 
 	if (!m_texture.has_value())
@@ -116,8 +165,7 @@ Result<Texture> TextureBuilder::build(ID3D11Device* device)
 		rtv = get(rtvResult);
 	}
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv = nullptr;
-	if (m_srvOptions.has_value())
+	if (srv != nullptr && m_srvOptions.has_value())
 	{
 		auto srvOptions = m_srvOptions.value();
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};

@@ -158,6 +158,7 @@
     <ClInclude Include="Capsule.h" />
     <ClInclude Include="CBuffer.h" />
     <ClInclude Include="CollisionHelpers.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Concepts.h" />
     <ClInclude Include="ContextHelpers.h" />
     <ClInclude Include="CubeMap.h" />
