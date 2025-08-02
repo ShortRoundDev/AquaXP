@@ -5,7 +5,7 @@ using namespace AquaXP;
 using namespace std;
 using namespace DirectX;
 
-shared_ptr<Mesh<SimplePositionVertex>> AquaXP::CreateSphere(ID3D11Device* device, u32 rings, u32 sectors)
+Result<Mesh<SimplePositionVertex>> AquaXP::CreateSphere(ID3D11Device* device, u32 rings, u32 sectors)
 {
 	vector<SimplePositionVertex> vertices;
 	vector<u32> indices;
@@ -41,11 +41,10 @@ shared_ptr<Mesh<SimplePositionVertex>> AquaXP::CreateSphere(ID3D11Device* device
 			}
 		}
 	}
-
-	return make_shared<Mesh<SimplePositionVertex>>(device, vertices, indices);
+	return CreateMesh<SimplePositionVertex>(device, vertices, indices);
 }
 
-shared_ptr<AquaXP::Mesh<ScreenQuadVertex>> AquaXP::CreateFullScreenQuad(ID3D11Device* device)
+Result<AquaXP::Mesh<ScreenQuadVertex>> AquaXP::CreateFullScreenQuad(ID3D11Device* device)
 {
 	vector<ScreenQuadVertex> vertices = {
 		{ .m_position = XMFLOAT3(-1.0f, +1.0f, +0.0f), .m_texCoords = XMFLOAT2(0, 0) },
@@ -57,5 +56,5 @@ shared_ptr<AquaXP::Mesh<ScreenQuadVertex>> AquaXP::CreateFullScreenQuad(ID3D11De
 		0, 1, 2,
 		0, 2, 3
 	};
-	return make_shared<Mesh<ScreenQuadVertex>>(device, vertices, indices);
+	return CreateMesh<ScreenQuadVertex>(device, vertices, indices);
 }

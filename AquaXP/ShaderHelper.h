@@ -17,13 +17,12 @@ namespace AquaXP
         typename T,
         template<typename> typename ByteAlloc = std::allocator
     >
-    Result<bool> InitShaderCode(
+    Result<Microsoft::WRL::ComPtr<T>> InitShaderCode(
         Initializer<T> initializer,
         ID3D11Device* device,
         std::wstring const& path,
         std::shared_ptr<u8[]>& byteCode,
-        sz& byteCodeSize,
-        T** container
+        sz& byteCodeSize
     )
     {
         using ByteAllocType = ByteAlloc<u8>;
@@ -36,17 +35,19 @@ namespace AquaXP
             return ErrorCode::FileError;
         }
 
+        Microsoft::WRL::ComPtr<T> container;
+
         HRESULT res;
         res = (device->*initializer)(
             byteCode.get(),
             byteCodeSize,
             nullptr,
-            container
+            container.GetAddressOf()
         );
         if (FAILED(res))
         {
             return HRToError(res);
         }
-        return true;
+        return container;
     }
 }

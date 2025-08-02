@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "Application.h"
 #include "ContextHelpers.h"
+#include "TextureBuilder.h"
 
 #include <iostream>
 
@@ -12,105 +13,111 @@ using namespace Microsoft::WRL;
 Graphics::Graphics(
     u16 width,
     u16 height,
-    HWND hwnd,
-    bool fullscreen
-) : m_context(),
-    m_device(),
-    m_swapChain(),
-    m_backBuffer(),
+    Microsoft::WRL::ComPtr<IDXGIFactory> factory,
+    DXGI_MODE_DESC displayMode,
+    Microsoft::WRL::ComPtr<ID3D11Device> device,
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context,
+    Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain,
+    DXGI_SAMPLE_DESC const& samplingDesc,
+    Texture const& backBufferRenderTarget,
+    Texture const& depthStencilBuffer,
+    DepthStencilState depthStencilState,
+    RasterizerState rasterizerState,
+    Mesh<ScreenQuadVertex> const& fullScreenQuad
+) : m_factory(factory),
+    m_displayMode(displayMode),
+    m_device(device),
+    m_context(context),
+    m_swapChain(swapChain),
+    m_sampleDesc(samplingDesc),
+    m_backBuffer(make_unique<Texture const>(backBufferRenderTarget)),
+    m_rootDepthBuffer(make_unique<Texture const>(depthStencilBuffer)),
+    m_rootDepthStencilState(make_unique<DepthStencilState const>(depthStencilState)),
+    m_rootRasterizerState(make_unique<RasterizerState const>(rasterizerState)),
+    m_fullScreenQuad(make_unique<Mesh<ScreenQuadVertex> const>(fullScreenQuad)),
     m_width(width),
     m_height(height),
-    m_fullScreenQuad()
+    // To be initialized in the constructor body:
+    m_viewPort(),
+    m_rootViewPort(),
+    m_msaaQualityLevels(),
+    m_renderTarget(),
+    m_depthBuffer(),
+    m_depthStencilState(),
+    m_rasterizerState()
 {
-    if (!initInfrastructure(width, height)) {
-        std::cout << "Failed to init infrastructure" << std::endl;
-    }
-    if (!initSwapchain(hwnd, fullscreen)) {
-        std::cout << "Failed to init swapchain" << std::endl;
-    }
-    if (!initRenderTarget(width, height)) {
-        std::cout << "Failed to init rtv" << std::endl;
-    }
-    if (!initDepthStencilBuffer(width, height)) {
-        std::cout << "Failed to init depth buffer" << std::endl;
-    }
-    setRenderTarget(
-        m_backBuffer.get(),
-        m_rootDepthBuffer.get(),
-        m_rootDepthStencilState.get()
-    );
-    if (!initRasterizer()) {
-        std::cout << "Failed to init rasterizer!" << std::endl;
-    }
-    m_fullScreenQuad = CreateFullScreenQuad(m_device.Get());
+    // Initialize to m_backBuffer and m_rootDepthBuffer
+    resetRenderTarget();
 }
 
-bool Graphics::initWaterfall(
-    Application* application,
-    std::initializer_list<Initializer> initializers
-)
+Result<ComPtr<IDXGIFactory>> CreateDXGIFactory()
 {
-    for (auto initializer : initializers)
+    ComPtr<IDXGIFactory> factory;
+    auto res = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)factory.GetAddressOf());
+    if (FAILED(res))
     {
-        if (!(this->*initializer)(application))
-        {
-            return false;
-        }
+        return HRToError(res);
     }
 
-    return true;
+    return factory;
 }
 
-
-bool Graphics::initInfrastructure(u16 width, u16 height)
+Result<DXGI_MODE_DESC> GetDisplayMode(u16 width, u16 height, IDXGIFactory* dxgiFactory)
 {
-    if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)m_factory.GetAddressOf())))
+    ComPtr<IDXGIAdapter> adapter = nullptr;
+    auto adapterRes = dxgiFactory->EnumAdapters(0, &adapter);
+    if (FAILED(adapterRes))
     {
-        return false;
-    }
-
-    IDXGIAdapter* adapter = nullptr;
-    if (FAILED(m_factory->EnumAdapters(0, &adapter)))
-    {
-        return false;
+        return HRToError(adapterRes);
     }
 
     ComPtr<IDXGIOutput> output = nullptr;
-    if (FAILED(adapter->EnumOutputs(0, &output)))
+    auto outputRes = adapter->EnumOutputs(0, output.GetAddressOf());
+    if (FAILED(outputRes))
     {
-        return false;
+        return HRToError(outputRes);
     }
 
     UINT numModes = 0;
-    if (FAILED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, nullptr)))
+    auto numDisplayModeListRes = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, nullptr);
+    if (FAILED(numDisplayModeListRes))
     {
-        return false;
+        return HRToError(numDisplayModeListRes);
     }
 
     auto displayModeList = std::make_unique<DXGI_MODE_DESC[]>(numModes);
-    if (FAILED(output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList.get())))
+    auto displayModeListRes = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList.get());
+    if (FAILED(displayModeListRes))
     {
-        return false;
+        return HRToError(displayModeListRes);
     }
 
+    optional<DXGI_MODE_DESC> displayMode;
     for (UINT i = 0; i < numModes; i++)
     {
         if (
             displayModeList[i].Width == width &&
             displayModeList[i].Height == height)
         {
-            m_displayMode = displayModeList[i];
+            displayMode = displayModeList[i];
             break;
         }
     }
-    return true;
+    if (!displayMode.has_value())
+    {
+        return ErrorCode::NoDisplayModeFound;
+    }
+
+    return displayMode.value();
 }
 
-bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
+Result<tuple<ComPtr<ID3D11Device>, ComPtr<ID3D11DeviceContext>>> CreateDeviceAndContext()
 {
-
+    ComPtr<ID3D11Device> device;
+    ComPtr<ID3D11DeviceContext> context;
     D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
-    if (FAILED(D3D11CreateDevice(
+    
+    auto res = D3D11CreateDevice(
         NULL,
         D3D_DRIVER_TYPE_HARDWARE,
         NULL,
@@ -118,25 +125,41 @@ bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
         &featureLevel,
         1,
         D3D11_SDK_VERSION,
-        m_device.GetAddressOf(),
+        device.GetAddressOf(),
         NULL,
-        m_context.GetAddressOf()
-    )))
+        context.GetAddressOf()
+    );
+    if (FAILED(res))
     {
-        return false;
+        return HRToError(res);
     }
 
-    UINT maxQuality;
-    const u32 COUNT = 4;
-    m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, COUNT, &maxQuality);
+    return make_tuple(device, context);
+}
 
-    DXGI_SWAP_CHAIN_DESC swapchainDesc = { 0 };
+Result<tuple<ComPtr<IDXGISwapChain>, DXGI_SAMPLE_DESC>> CreateSwapChain(
+    ID3D11Device* device,
+    IDXGIFactory* factory,
+    DXGI_MODE_DESC displayMode,
+    HWND hwnd,
+    u16 width,
+    u16 height,
+    bool fullscreen
+)
+{
+    UINT maxQuality;
+    constexpr u32 COUNT = 4;
+
+    device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, COUNT, &maxQuality);
+
+    DXGI_SWAP_CHAIN_DESC swapchainDesc{};
+
     swapchainDesc.BufferCount = 1;
-    swapchainDesc.BufferDesc.Width = static_cast<u32>(m_width);
-    swapchainDesc.BufferDesc.Height = static_cast<u32>(m_height);
+    swapchainDesc.BufferDesc.Width = static_cast<u32>(width);
+    swapchainDesc.BufferDesc.Height = static_cast<u32>(height);
     swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapchainDesc.BufferDesc.RefreshRate.Numerator = 0; // or 0 if !vsync
-    swapchainDesc.BufferDesc.RefreshRate.Denominator = 1; // or 1 if !vsync
+    swapchainDesc.BufferDesc.RefreshRate.Numerator = displayMode.RefreshRate.Numerator;// or 0 if !vsync
+    swapchainDesc.BufferDesc.RefreshRate.Denominator = displayMode.RefreshRate.Denominator; // or 1 if !vsync
     swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     swapchainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
     swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -147,73 +170,74 @@ bool Graphics::initSwapchain(HWND hwnd, bool fullscreen)
     swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     swapchainDesc.Flags = 0;
 
-    m_sampleDesc = swapchainDesc.SampleDesc;
+    ComPtr<IDXGISwapChain> swapchain = nullptr;
 
-    HRESULT res;
-    if (FAILED(
-        res = m_factory->CreateSwapChain(
-            m_device.Get(),
-            &swapchainDesc,
-            m_swapChain.GetAddressOf()
-        )
-    ))
+    auto res = factory->CreateSwapChain(
+        device,
+        &swapchainDesc,
+        swapchain.GetAddressOf()
+    );
+
+    if (FAILED(res))
     {
-        return false;
+        return HRToError(res);
     }
 
     ComPtr<IDXGIOutput> output;
-    if (FAILED(m_swapChain->GetContainingOutput(output.GetAddressOf())))
+    auto outputRes = swapchain->GetContainingOutput(output.GetAddressOf());
+    if (FAILED(outputRes))
     {
-        return false;
+        return HRToError(outputRes);
     }
 
-    return true;
+    return make_tuple(swapchain, swapchainDesc.SampleDesc);
 }
 
-bool Graphics::initRenderTarget(u16 width, u16 height)
+Result<Texture> CreateBackBufferRenderTarget(IDXGISwapChain* swapChain, ID3D11Device* device)
 {
     ComPtr<ID3D11Texture2D> backBuffer;
-    if (FAILED(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf())))
+    auto backBufferRes = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)backBuffer.GetAddressOf());
+    if (FAILED(backBufferRes))
     {
-        return false;
+        return HRToError(backBufferRes);
     }
 
-    m_backBuffer = std::make_unique<Texture>(
-        *this,
-        backBuffer,
-        static_cast<D3D11_BIND_FLAG>(D3D11_BIND_RENDER_TARGET)
-    );
-
-    return true;
+    auto backBufferTextureRes = TextureBuilder()
+        .withTexture(backBuffer)
+        .withRTV()
+        .build(device);
+    if (!isOk(backBufferTextureRes))
+    {
+        return error(backBufferTextureRes);
+    }
+    return get(backBufferTextureRes);
 }
 
-bool Graphics::initDepthStencilBuffer(u16 width, u16 height)
+Result<tuple<Texture, DepthStencilState>> CreateDepthStencilBuffer(
+    ID3D11Device* device,
+    u16 width,
+    u16 height,
+    DXGI_SAMPLE_DESC samplingDesc
+)
 {
-
-    auto depthResult = CreateDepthTarget(
-        m_device.Get(),
+    auto depthRes = CreateDepthTarget(
+        device,
         static_cast<u32>(width),
         static_cast<u32>(height),
-        getMultiSamplingDesc()
+        samplingDesc
     );
-    if (auto error = errorOpt(depthResult))
+    if (!isOk(depthRes))
     {
-        // TODO: Convert this to monad return
-        return false;
+        return error(depthRes);
     }
 
-    m_rootDepthBuffer = make_unique<Texture>(get(depthResult));
-    m_depthBuffer = m_rootDepthBuffer.get();
-    m_rootDepthStencilState = make_unique<DepthStencilState>(m_device.Get());
+    auto depthStencilStateRes = CreateDepthStencilState(device);
+    if (!isOk(depthStencilStateRes))
+    {
+        return error(depthStencilStateRes);
+    }
 
-    return true;
-}
-
-bool Graphics::initRasterizer()
-{
-    m_rootRasterizerState = make_unique<RasterizerState const>(m_device.Get());
-    setRasterizerState(m_rootRasterizerState.get());
-    return true;
+    return make_tuple(get(depthRes), get(depthStencilStateRes));
 }
 
 void Graphics::resetRenderTarget()
@@ -235,18 +259,17 @@ void Graphics::setRenderTarget(RenderTarget const& renderTarget)
 
     m_depthBuffer = renderTarget.depthBuffer;
 
-    if (renderTarget.depthStencilState.has_value()) {
-        setDepthStencilState(
-            renderTarget.depthStencilState.value(),
-            renderTarget.stencilRef.value_or(1)
-        );
-    }
-    //m_context->OMSetDepthStencilState(m_depthBuffer->getDepthStencilState().Get(), 1);
     m_context->OMSetRenderTargets(
         static_cast<u32>(renderTarget.numRenderTargets),
         renderTarget.numRenderTargets > 0 ? s_renderTargetViews : nullptr,
         m_depthBuffer == nullptr ? nullptr : m_depthBuffer->getDepthStencilView().Get()
     );
+    
+    // Default to autosizing but allow the user to change it
+    if (!renderTarget.autosize.value_or(true))
+    {
+        return;
+    }
 
     f32 width = renderTarget.numRenderTargets > 0
         ? renderTarget.renderTargets[0].getWidth()
@@ -334,17 +357,13 @@ Texture const* Graphics::getBackBuffer() const
 
 void Graphics::setRenderTarget(
     Texture const* renderTarget,
-    Texture const* depthBuffer,
-    std::optional<DepthStencilState const*> depthStencilState,
-    UINT stencilRef
+    Texture const* depthBuffer
 )
 {
     RenderTarget rt = {
         renderTarget,
         static_cast<sz>(renderTarget == nullptr ? 0 : 1),
-        depthBuffer,
-        depthStencilState,
-        stencilRef
+        depthBuffer
     };
     setRenderTarget(rt);
 }
@@ -379,8 +398,12 @@ RenderTarget Graphics::getRootRenderTarget() const {
 
 void Graphics::setDepthStencilState(DepthStencilState const* depthStencilState, UINT stencilRef)
 {
-    m_depthStencilState = depthStencilState;
-    m_context->OMSetDepthStencilState(m_depthStencilState->getDepthStencilState().Get(), stencilRef);
+    /* Depth Stencil state must ALWAYS be set */
+    m_depthStencilState = depthStencilState == nullptr
+        ? m_rootDepthStencilState.get()
+        : depthStencilState;
+
+    m_context->OMSetDepthStencilState(m_depthStencilState->Get(), stencilRef);
 }
 
 DepthStencilState const* Graphics::getDepthStencilState() const
@@ -401,7 +424,7 @@ void Graphics::resetDepthStencilState()
 void Graphics::setRasterizerState(RasterizerState const* rasterizerState)
 {
     m_rasterizerState = rasterizerState;
-    m_context->RSSetState(m_rasterizerState->getRasterizerState().Get());
+    m_context->RSSetState(m_rasterizerState->Get());
 }
 
 RasterizerState const* Graphics::getRasterizerState() const
@@ -422,4 +445,84 @@ void Graphics::resetRasterizerState()
 void Graphics::present() const
 {
     m_swapChain->Present(1, 0);
+}
+
+Result<unique_ptr<Graphics>> AquaXP::CreateGraphics(u16 width, u16 height, HWND hwnd, bool fullscreen, bool vsync)
+{
+    auto factoryRes = CreateDXGIFactory();
+    if (!isOk(factoryRes))
+    {
+        return error(factoryRes);
+    }
+
+    auto dxgiFactory = get(factoryRes);
+
+    auto displayModeRes = GetDisplayMode(width, height, dxgiFactory.Get());
+    if (!isOk(displayModeRes))
+    {
+        return error(displayModeRes);
+    }
+
+    auto deviceContextRes = CreateDeviceAndContext();
+    if (!isOk(deviceContextRes))
+    {
+        return error(deviceContextRes);
+    }
+
+    auto [device, context] = get(deviceContextRes);
+    auto swapChainRes = CreateSwapChain(device.Get(), dxgiFactory.Get(), get(displayModeRes), hwnd, width, height, fullscreen);
+    if (!isOk(swapChainRes))
+    {
+        return error(swapChainRes);
+    }
+
+    auto [swapChain, samplingDesc] = get(swapChainRes);
+    auto backBufferRes = CreateBackBufferRenderTarget(swapChain.Get(), device.Get());
+    if (!isOk(backBufferRes))
+    {
+        return error(backBufferRes);
+    }
+
+    auto depthStencilBufferRes = CreateDepthStencilBuffer(device.Get(), width, height, samplingDesc);
+    if (!isOk(depthStencilBufferRes))
+    {
+        return error(depthStencilBufferRes);
+    }
+
+    auto [depthStencilBuffer, depthStencilState] = get(depthStencilBufferRes);
+
+    auto rasterizerStateRes = CreateRasterizerState(device.Get());
+    if (!isOk(rasterizerStateRes))
+    {
+        return error(rasterizerStateRes);
+    }
+
+    auto fullScreenQuadRes = CreateFullScreenQuad(device.Get());
+    if (!isOk(fullScreenQuadRes))
+    {
+        return error(fullScreenQuadRes);
+    }
+
+    return make_unique<Graphics>(
+        width,
+        height,
+        dxgiFactory,
+        get(displayModeRes),
+        device,
+        context,
+        swapChain,
+        samplingDesc,
+        get(backBufferRes),
+        depthStencilBuffer,
+        depthStencilState,
+        get(rasterizerStateRes),
+        get(fullScreenQuadRes)
+    );
+}
+
+void Graphics::restore()
+{
+    setRenderTarget(m_renderTarget);
+    setDepthStencilState(m_depthStencilState);
+    setRasterizerState(m_rasterizerState);
 }

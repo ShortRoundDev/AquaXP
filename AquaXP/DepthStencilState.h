@@ -4,14 +4,14 @@ namespace AquaXP
 {
 #pragma warning( push )
 #pragma warning( disable: 4251 )
-	struct DepthStencilOpDesc {
+	struct DepthStencilOpOptions {
 		std::optional<D3D11_STENCIL_OP> stencilFailOp;
 		std::optional<D3D11_STENCIL_OP> stencilDepthFailOp;
 		std::optional<D3D11_STENCIL_OP> stencilPassOp;
 		std::optional<D3D11_COMPARISON_FUNC> stencilFunc;
 	};
 
-	struct DepthStencilStateDesc
+	struct DepthStencilStateOptions
 	{
 		std::optional<BOOL> depthEnable;
 		std::optional<D3D11_DEPTH_WRITE_MASK> depthWriteMask;
@@ -19,21 +19,15 @@ namespace AquaXP
 		std::optional<BOOL> stencilEnable;
 		std::optional<UINT8> stencilReadMask;
 		std::optional<UINT8> stencilWriteMask;
-		std::optional<DepthStencilOpDesc> frontFace;
-		std::optional<DepthStencilOpDesc> backFace;
+		std::optional<DepthStencilOpOptions> frontFace;
+		std::optional<DepthStencilOpOptions> backFace;
 	};
 #pragma warning( pop )
 
+	using DepthStencilState = Microsoft::WRL::ComPtr<ID3D11DepthStencilState>;
 
-	class DepthStencilState
-	{
-	public:
-		AQUAXP_API DepthStencilState(ID3D11Device* device, DepthStencilStateDesc const& depthStencilStateDesc);
-		AQUAXP_API DepthStencilState(ID3D11Device* device);
-		AQUAXP_API Microsoft::WRL::ComPtr<ID3D11DepthStencilState> getDepthStencilState() const;
-
-	private:
-		bool m_status;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
-	};
+	AQUAXP_API Result<DepthStencilState> CreateDepthStencilState(
+		ID3D11Device* device,
+		DepthStencilStateOptions const& options = DepthStencilStateOptions()
+	);
 }

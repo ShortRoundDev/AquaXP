@@ -16,16 +16,13 @@ namespace AquaXP
     {
     public:
         CBuffer(
-            ID3D11Device* device,
-            T const& cBufferData
-        ) :
-            m_cBufferData(cBufferData),
-            m_cBuffer()
-        {
-            init(device);
-        }
+            T const& data,
+            Microsoft::WRL::ComPtr<ID3D11Buffer> buffer
+        ) : m_cBufferData(data),
+            m_cBuffer(buffer)
+        { }
 
-        bool bind(
+        Result<Unit> bind(
             ID3D11DeviceContext* context,
             UINT slot = 0,
             CbufferBindStage bindStage = (CbufferBindStage)(VS | PS)
@@ -39,10 +36,10 @@ namespace AquaXP
                 0,
                 &bufferResource
             );
+
             if (FAILED(res))
             {
-                // TODO: Handle Error here
-                return false;
+                return HRToError(res);
             }
 
             void* localBuffer = (void*)bufferResource.pData;
@@ -84,7 +81,8 @@ namespace AquaXP
                     slot, 1, m_cBuffer.GetAddressOf()
                 );
             }
-            return true;
+
+            return Unit{};
         }
 
         void setData(T const& data)
@@ -107,38 +105,49 @@ namespace AquaXP
             return m_cBuffer;
         }
 
-
     private:
         T m_cBufferData;
         Microsoft::WRL::ComPtr<ID3D11Buffer> m_cBuffer;
+    };
 
-        bool init(ID3D11Device* device)
+    struct CBufferOptions
+    {
+        std::optional<D3D11_USAGE> usage;// = D3D11_USAGE_DYNAMIC;
+        std::optional<UINT> bindFlags;// = D3D11_BIND_CONSTANT_BUFFER;
+        std::optional<UINT> cpuAccessFlags;// = D3D11_CPU_ACCESS_WRITE;
+        std::optional<UINT> miscFlags;// = 0;
+        std::optional<UINT> structureByteStride;// = 0;
+    };
+
+    template<typename T>
+    Result<CBuffer<T>> CreateCBuffer(ID3D11Device* device, T const& initialData, CBufferOptions options = CBufferOptions())
+    {
+        if (sizeof(T) == 0)
         {
-            if (sizeof(T) == 0)
-            {
-                // Not actually an error, just stupid
-                return true;
-            }
-
-            D3D11_BUFFER_DESC bufferDesc = {
-                .ByteWidth = sizeof(T), // Use alignas(16) for cbuffers
-                .Usage = D3D11_USAGE_DYNAMIC,
-                .BindFlags = D3D11_BIND_CONSTANT_BUFFER,
-                .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
-                .MiscFlags = 0,
-                .StructureByteStride = 0
-            };
-
-            if (FAILED(device->CreateBuffer(
-                &bufferDesc,
-                NULL,
-                m_cBuffer.GetAddressOf()
-            )))
-            {
-                return false;
-            }
-            return true;
+            return ErrorCode::EmptyCBuffer;
         }
 
-    };
+        Microsoft::WRL::ComPtr<ID3D11Buffer> cBuffer;
+
+        D3D11_BUFFER_DESC bufferDesc = {
+            .ByteWidth = sizeof(T),
+            .Usage = options.usage.value_or(D3D11_USAGE_DYNAMIC),
+            .BindFlags = options.bindFlags.value_or(D3D11_BIND_CONSTANT_BUFFER),
+            .CPUAccessFlags = options.cpuAccessFlags.value_or(D3D11_CPU_ACCESS_WRITE),
+            .MiscFlags = options.miscFlags.value_or(0),
+            .StructureByteStride = options.structureByteStride.value_or(0)
+        };
+
+        HRESULT res = device->CreateBuffer(
+            &bufferDesc,
+            NULL,
+            cBuffer.GetAddressOf()
+        );
+
+        if (FAILED(res))
+        {
+            return HRToError(res);
+        }
+        return CBuffer<T>(initialData, cBuffer);
+    }
 };

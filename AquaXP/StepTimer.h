@@ -8,7 +8,13 @@ namespace AquaXP
     class AQUAXP_API StepTimer
     {
     public:
-        StepTimer() noexcept(false) :
+        StepTimer(
+            LARGE_INTEGER qpcFrequency,
+            LARGE_INTEGER qpcLastTime
+        ) :
+            m_qpcFrequency(qpcFrequency),
+            m_qpcLastTime(qpcLastTime),
+            m_qpcMaxDelta(static_cast<u64>(qpcFrequency.QuadPart / 10)),
             m_elapsedTicks(0),
             m_totalTicks(0),
             m_leftOverTicks(0),
@@ -19,19 +25,7 @@ namespace AquaXP
             m_isFixedTimeStep(false),
             m_targetElapsedTicks(TicksPerSecond / 60)
         {
-            if (!QueryPerformanceFrequency(&m_qpcFrequency))
-            {
-                throw exception();
-            }
-
-            if (!QueryPerformanceCounter(&m_qpcLastTime))
-            {
-                throw std::exception();
-            }
-
-            // Initialize max delta to 1/10 of a second.
-            m_qpcMaxDelta = static_cast<uint64_t>(m_qpcFrequency.QuadPart / 10);
-        }
+		}
 
         // Get elapsed time since the previous Update call.
         uint64_t GetElapsedTicks() const noexcept { return m_elapsedTicks; }
@@ -64,11 +58,11 @@ namespace AquaXP
         // call this to avoid having the fixed timestep logic attempt a set of catch-up
         // Update calls.
 
-        void ResetElapsedTime()
+        Result<Unit> ResetElapsedTime()
         {
             if (!QueryPerformanceCounter(&m_qpcLastTime))
             {
-                throw std::exception();
+                return ErrorCode::QueryPerformanceCounterFailed;
             }
 
             m_leftOverTicks = 0;
@@ -79,14 +73,14 @@ namespace AquaXP
 
         // Update timer state, calling the specified Update function the appropriate number of times.
         template<typename TUpdate>
-        void Tick(Application* application, const TUpdate& update)
+        Result<Unit> Tick(Application* application, const TUpdate& update)
         {
             // Query the current time.
             LARGE_INTEGER currentTime;
 
             if (!QueryPerformanceCounter(&currentTime))
             {
-                throw std::exception();
+                return ErrorCode::QueryPerformanceCounterFailed;
             }
 
             uint64_t timeDelta = static_cast<uint64_t>(currentTime.QuadPart - m_qpcLastTime.QuadPart);
@@ -180,4 +174,6 @@ namespace AquaXP
         bool m_isFixedTimeStep;
         uint64_t m_targetElapsedTicks;
     };
+
+    AQUAXP_API Result<StepTimer> CreateStepTimer();
 }

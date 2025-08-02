@@ -6,25 +6,7 @@
 
 namespace AquaXP
 {
-    class PixelShader
-    {
-    public:
-        PixelShader(Microsoft::WRL::ComPtr<ID3D11PixelShader> shader) : m_shader(shader)
-        { }
-
-        void use(ID3D11DeviceContext* context) const
-        {
-            context->PSSetShader(m_shader.Get(), NULL, 0);
-        }
-
-        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D11PixelShader> getShader() const
-        {
-            return m_shader;
-        }
-
-    private:
-        Microsoft::WRL::ComPtr<ID3D11PixelShader> m_shader;
-    };
+    using PixelShader = Microsoft::WRL::ComPtr<ID3D11PixelShader>;
 
     template<template<typename> typename Alloc = std::allocator>
     Result<PixelShader> LoadPixelShader(ID3D11Device* device,
@@ -35,8 +17,6 @@ namespace AquaXP
         using ByteAllocTraits = std::allocator_traits<ByteAllocType>;
         static_assert(std::is_same_v<typename ByteAllocTraits::value_type, u8>,
             "Byte Allocator must be for u8 type");
-
-        Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
         
         std::shared_ptr<u8[]> byteCode;
         sz byteCodeSize;
@@ -46,15 +26,14 @@ namespace AquaXP
             device,
             path,
             byteCode,
-            byteCodeSize,
-            shader.GetAddressOf()
+            byteCodeSize
         );
         if(!isOk(shaderInitResult))
         {
             return error(shaderInitResult);
         }
 
-        return PixelShader(shader);
+        return get(shaderInitResult);
     }
 
     template<template<typename> typename Alloc = std::allocator>

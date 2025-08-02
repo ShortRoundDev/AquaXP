@@ -13,8 +13,7 @@ namespace AquaXP
         Texture const* renderTargets;
         sz numRenderTargets;
         Texture const* depthBuffer;
-        std::optional<DepthStencilState const*> depthStencilState;
-        std::optional<UINT> stencilRef;
+        std::optional<bool> autosize;
     };
 #pragma warning( pop )
 
@@ -22,11 +21,21 @@ namespace AquaXP
     class Graphics
     {
     public:
+
         AQUAXP_API Graphics(
             u16 width,
             u16 height,
-            HWND hwnd,
-            bool fullscreen
+            Microsoft::WRL::ComPtr<IDXGIFactory> factory,
+            DXGI_MODE_DESC displayMode,
+            Microsoft::WRL::ComPtr<ID3D11Device> device,
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> context,
+            Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain,
+            DXGI_SAMPLE_DESC const& samplingDesc,
+            Texture const& backBufferRenderTarget,
+            Texture const& depthStencilBuffer,
+            DepthStencilState depthStencilState, 
+            RasterizerState rasterizerState,
+            Mesh<ScreenQuadVertex> const& fullScreenQuad
         );
         AQUAXP_API ~Graphics() = default;
 
@@ -42,9 +51,7 @@ namespace AquaXP
         AQUAXP_API void setRenderTarget(RenderTarget const& renderTarget);
         AQUAXP_API void setRenderTarget(
             Texture const* renderTarget,
-            Texture const* depthBuffer,
-            std::optional<DepthStencilState const*> depthStencilState = std::nullopt,
-            UINT stencilRef = 1
+            Texture const* depthBuffer
         );
         AQUAXP_API RenderTarget const& getRenderTarget() const;
         AQUAXP_API RenderTarget getRootRenderTarget() const;
@@ -70,6 +77,7 @@ namespace AquaXP
         AQUAXP_API Mesh<ScreenQuadVertex> const* getFullScreenQuad() const;
 
         AQUAXP_API void present() const;
+        AQUAXP_API void restore();
 
     private:
         Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -100,20 +108,8 @@ namespace AquaXP
         std::unique_ptr<Texture const> m_rootDepthBuffer;
         std::unique_ptr<DepthStencilState const> m_rootDepthStencilState;
         std::unique_ptr<RasterizerState const> m_rootRasterizerState;
-
-        std::shared_ptr<Mesh<ScreenQuadVertex>> m_fullScreenQuad;
-
-        using Initializer = bool(Graphics::*)(Application* application);
-        bool initWaterfall(
-            Application* application,
-            std::initializer_list<Initializer> initializers
-        );
-
-        bool initInfrastructure(u16 width, u16 height);
-        bool initSwapchain(HWND hwnd, bool fullscreen);
-        bool initRenderTarget(u16 width, u16 height);
-        bool initDepthStencilBuffer(u16 width, u16 height);
-        bool initRasterizer();
-
+        std::unique_ptr<Mesh<ScreenQuadVertex> const> m_fullScreenQuad;
     };
+
+    AQUAXP_API Result<std::unique_ptr<Graphics>> CreateGraphics(u16 width, u16 height, HWND hwnd, bool fullscreen, bool vsync);
 }

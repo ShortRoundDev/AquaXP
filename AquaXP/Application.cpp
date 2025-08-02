@@ -10,118 +10,59 @@ template<class... Ts> struct overloaded : Ts... {
 };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-Window initWindow(
-    u16 width,
-    u16 height,
-    bool fullscreen,
-    WCHAR const* title,
-    bool enableTitlebar,
-    bool vSync
-)
-{
-    Window window;
-    window.m_status = false;
-    window.m_enableTitlebar = enableTitlebar;
-    window.m_vSync = vSync;
-    window.m_fullscreen = fullscreen;
-    window.m_title = title;
-    window.m_instance = GetModuleHandle(nullptr);
-
-    WNDCLASSEX wc = { 0 };
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = window.m_instance;
-    wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-    wc.hIconSm = wc.hIcon;
-    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-    wc.lpszClassName = L"AquaXP";
-    wc.cbSize = sizeof(WNDCLASSEX);
-
-    if (!RegisterClassEx(&wc))
-    {
-        return window;
-    }
-
-    if (fullscreen)
-    {
-        window.m_width = GetSystemMetrics(SM_CXSCREEN);
-        window.m_height = GetSystemMetrics(SM_CYSCREEN);
-    }
-    else
-    {
-        window.m_width = width;
-        window.m_height = height;
-    }
-
-    window.m_hwnd = CreateWindowExW(
-        WS_EX_APPWINDOW,
-        wc.lpszClassName,
-        title,
-        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        window.m_width,
-        window.m_height,
-        nullptr,
-        nullptr,
-        window.m_instance,
-        nullptr
-    );
-
-    if (!window.m_hwnd)
-    {
-        return window;
-    }
-
-    HRESULT result = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    if (FAILED(result))
-    {
-        return window;
-    }
-
-    window.m_status = true;
-    return window;
-}
+//Application::Application(
+//    u16 width,
+//    u16 height,
+//    WCHAR const* title,
+//    bool vSync,
+//    bool fullscreen,
+//    bool enableTitlebar,
+//    bool fixedTimestep
+//) :
+//    //m_window(initWindow(width, height, fullscreen, title, enableTitlebar, vSync)),
+//    m_fixedTimestep(fixedTimestep),
+//    m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen),
+//
+//    m_keyboard(),
+//    m_keyboardState(m_keyboard.GetState()),
+//    m_keyboardStateTracker(),
+//
+//    m_mouse(),
+//    m_mouseState(m_mouse.GetState()),
+//    m_mouseButtonStateTracker(),
+//
+//    m_gamePad(),
+//    m_gamePadState(),
+//    m_buttonStateTracker(),
+//
+//    m_actionBindings(),
+//    m_axisInputType(),
+//
+//    m_sensitivity()
+//{
+//    m_axisInputType[0] = make_pair(AxisInput::Keyboard, AxisInput::Mouse);
+//    m_sensitivity[0] = make_pair(0.5f, 0.005f);
+//    for (i32 i = 1; i < g_maxGamePads; i++)
+//    {
+//        m_axisInputType[i] = make_pair(AxisInput::GamePad, AxisInput::GamePad);
+//        m_sensitivity[i] = make_pair(1.0f, 0.5f);
+//    }
+//    m_mouse.SetWindow(m_window.m_hwnd);
+//}
+//
 
 Application::Application(
-    u16 width,
-    u16 height,
-    WCHAR const* title,
-    bool vSync,
-    bool fullscreen,
-    bool enableTitlebar,
-    bool fixedTimestep
-) :
-    m_window(initWindow(width, height, fullscreen, title, enableTitlebar, vSync)),
-    m_fixedTimestep(fixedTimestep),
-    m_graphics(m_window.m_width, m_window.m_height, m_window.m_hwnd, m_window.m_fullscreen),
+    Window const& window,
+    std::unique_ptr<Graphics> graphics,
+    StepTimer const& stepTimer,
+    DirectX::Keyboard const& keyboard
+) : m_window(window),
+    m_graphics(move(graphics)),
+    m_timer(stepTimer),
 
     m_keyboard(),
-    m_keyboardState(m_keyboard.GetState()),
-    m_keyboardStateTracker(),
-
-    m_mouse(),
-    m_mouseState(m_mouse.GetState()),
-    m_mouseButtonStateTracker(),
-
-    m_gamePad(),
-    m_gamePadState(),
-    m_buttonStateTracker(),
-
-    m_actionBindings(),
-    m_axisInputType(),
-
-    m_sensitivity()
+    m_keyboardState(m_keyboard.GetState())
 {
-    m_axisInputType[0] = make_pair(AxisInput::Keyboard, AxisInput::Mouse);
-    m_sensitivity[0] = make_pair(0.5f, 0.005f);
-    for (i32 i = 1; i < g_maxGamePads; i++)
-    {
-        m_axisInputType[i] = make_pair(AxisInput::GamePad, AxisInput::GamePad);
-        m_sensitivity[i] = make_pair(1.0f, 0.5f);
-    }
-    m_mouse.SetWindow(m_window.m_hwnd);
 }
 
 void Application::run(
@@ -515,7 +456,6 @@ DirectX::XMVECTOR Application::getLook(i32 playerNum, i32 axis) const
     }
     }
     return XMVectorSet(0, 0, 0, 0);
-
 }
 
 bool Application::isKeyDown(DirectX::Keyboard::Keys key) const
@@ -1007,4 +947,107 @@ bool Application::mouseButtonIsState(MouseButton button, Mouse::ButtonStateTrack
         return tracker.xButton2 == checkState;
     }
     return false;
+}
+
+Result<Window> CreateAquaWindow(u16 width, u16 height, WCHAR const* title, ApplicationOptions const& options)
+{
+    Window window;
+    window.m_enableTitlebar = options.enableTitleBar.value_or(true);
+    window.m_vSync = options.vSync.value_or(true);
+    window.m_fullscreen = options.fullscreen.value_or(false);
+    window.m_title = title;
+    window.m_instance = GetModuleHandle(nullptr);
+
+    WNDCLASSEX wc{};
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = WndProc;
+    wc.hInstance = window.m_instance;
+    wc.hIcon = options.icon.value_or(LoadIcon(nullptr, IDI_APPLICATION));
+    wc.hCursor = options.cursor.value_or(LoadCursor(nullptr, IDC_ARROW));
+    wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    wc.lpszClassName = title;
+    wc.cbSize = sizeof(WNDCLASSEX);
+
+    auto registerRes = RegisterClassEx(&wc);
+    if (registerRes == 0)
+    {
+        return HRToError(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    auto fullscreen = options.fullscreen.value_or(false);
+    if (fullscreen)
+    {
+        window.m_width = GetSystemMetrics(SM_CXSCREEN);
+        window.m_height = GetSystemMetrics(SM_CYSCREEN);
+    }
+    else
+    {
+        window.m_width = width;
+        window.m_height = height;
+    }
+
+
+    window.m_hwnd = CreateWindowExW(
+        WS_EX_APPWINDOW,
+        wc.lpszClassName,
+        title,
+        options.enableTitleBar.value_or(true)
+            ? WS_OVERLAPPEDWINDOW
+            : WS_OVERLAPPED,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
+        window.m_width,
+        window.m_height,
+        nullptr,
+        nullptr,
+        window.m_instance,
+        nullptr
+    );
+    if (!window.m_hwnd)
+    {
+        return HRToError(HRESULT_FROM_WIN32(GetLastError()));
+    }
+    HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(result))
+    {
+        return HRToError(result);
+    }
+
+    return window;
+}
+
+Result<unique_ptr<Application>> AquaXP::CreateApplication(
+    u16 width,
+    u16 height,
+    WCHAR const* title,
+    ApplicationOptions const& options
+)
+{
+    auto windowRes = CreateAquaWindow(width, height, title, options);
+    if (!isOk(windowRes))
+    {
+        return error(windowRes);
+    }
+    auto window = get(windowRes);
+
+    auto graphicsRes = CreateGraphics(width, height, window.m_hwnd, options.fullscreen.value_or(false), options.vSync.value_or(true));
+    if (!isOk(graphicsRes))
+    {
+        return error(graphicsRes);
+    }
+
+    auto stepTimerRes = CreateStepTimer();
+    if (!isOk(stepTimerRes))
+    {
+        return error(stepTimerRes);
+    }
+
+    auto graphics = get(move(graphicsRes));
+
+    auto keyboardResult = tryDo<unique_ptr<Keyboard>>([]() {
+        auto x = make_unique<Keyboard>();
+        return x;
+    });
+
+    return make_unique<Application>(window, move(graphics));
 }

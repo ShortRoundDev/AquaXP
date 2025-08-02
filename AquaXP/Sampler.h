@@ -27,22 +27,21 @@ namespace AquaXP
         BorderAll = BorderU | BorderV | BorderW,
         ClampAll = ClampU | ClampV | ClampW,
         MirrorOnceAll = MirrorOnceU | MirrorOnceV | MirrorOnceW
-
     };
 
-    class Sampler
+    struct SamplerOptions
     {
-    public:
-        AQUAXP_API Sampler(
-            ID3D11Device* device,
-            D3D11_FILTER filterType = D3D11_FILTER_ANISOTROPIC,
-            TextureAddressMode textureAddressMode = static_cast<TextureAddressMode>(ClampU | ClampV | ClampW),
-            DirectX::XMFLOAT4 border = DirectX::XMFLOAT4(0, 0, 0, 0)
-        );
-
-        AQUAXP_API void use(ID3D11DeviceContext* context, u32 slot = 0) const;
-
-    private:
-        Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
+        std::optional<D3D11_FILTER> filter;
+        std::optional<u16> textureAddressMode;
+        std::optional<f32> mipLODBias;
+        std::optional<UINT> maxAnisotropy;
+        std::optional<D3D11_COMPARISON_FUNC> comparisonFunc;
+        std::optional<DirectX::XMFLOAT4> borderColor;
+        std::optional<f32> minLOD;
+        std::optional<f32> maxLOD;
     };
+
+    using Sampler = Microsoft::WRL::ComPtr<ID3D11SamplerState>;
+
+    AQUAXP_API Result<Sampler> CreateSampler(ID3D11Device* device, SamplerOptions const& options = SamplerOptions());
 }

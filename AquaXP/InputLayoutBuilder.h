@@ -275,4 +275,12 @@ namespace AquaXP
     private:
         Container<D3D11_INPUT_ELEMENT_DESC> m_layoutBuffer;
     };
+
+    AQUAXP_API Result<Microsoft::WRL::ComPtr<ID3D11InputLayout>> BuildInputLayout(
+        ID3D11Device* device,
+        D3D11_INPUT_ELEMENT_DESC const* inputLayoutElements,
+        UINT numInputLayoutElements,
+        u8* byteCode,
+        sz byteCodeLength
+    );
 }

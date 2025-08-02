@@ -8,6 +8,9 @@ namespace AquaXP
 		UnknownError,
 		ReBoxFailed,
 		WStringConversionFailure,
+		NoDisplayModeFound,
+		QueryPerformanceCounterFailed,
+		InternalException,
 		// D3D11 HRESULT codes
 		D3D11ErrorFileNotFound,
 		D3D11ErrorTooManyUniqueStateObjects,
@@ -52,6 +55,10 @@ namespace AquaXP
 		DSVCreationFailed,
 		RTVCreationFailed,
 		WICError,
+		// TextureBuilder Codes
+		MissingTexture2D,
+		// CBuffer Codes
+		EmptyCBuffer,
 		// File related codes
 		FileNotFound
 	};
@@ -59,8 +66,10 @@ namespace AquaXP
 	template<typename T>
 	using Result = std::variant<T, ErrorCode>;
 
+	struct Unit {};
+
 	template<typename T>
-	bool tryGet(Result<T> result, T& data)
+	bool tryGet(Result<T> const& result, T& data)
 	{
 		if (std::holds_alternative<T>(result))
 		{
@@ -71,13 +80,19 @@ namespace AquaXP
 	}
 
 	template<typename T>
-	T get(Result<T> result)
+	T get(Result<T> const& result)
 	{
 		return std::get<T>(result);
 	}
 
 	template<typename T>
-	std::optional<T> getOpt(Result<T> result)
+	T get(Result<T>&& result)
+	{
+		return std::get<T>(std::move(result));
+	}
+
+	template<typename T>
+	std::optional<T> getOpt(Result<T> const& result)
 	{
 		if (std::holds_alternative<T>(result))
 		{
@@ -87,15 +102,21 @@ namespace AquaXP
 	}
 
 	template<typename T>
-	bool isOk(Result<T> result)
+	bool isOk(Result<T> const& result)
 	{
 		return std::holds_alternative<T>(result);
 	}
 
 	template<typename T>
-	bool tryError(Result<T> result, ErrorCode& error)
+	Result<T> ok(T const& data)
 	{
-		if (std::holds_alternative<ErrorCode>)
+		return Result<T>(data);
+	}
+
+	template<typename T>
+	bool tryError(Result<T> const& result, ErrorCode& error)
+	{
+		if (std::holds_alternative<ErrorCode>(result))
 		{
 			error = std::get<ErrorCode>(result);
 			return true;
@@ -104,19 +125,32 @@ namespace AquaXP
 	}
 
 	template<typename T>
-	ErrorCode error(Result<T> result)
+	ErrorCode error(Result<T> const& result)
 	{
 		return std::get<ErrorCode>(result);
 	}
 
 	template<typename T>
-	std::optional<ErrorCode> errorOpt(Result<T> result)
+	std::optional<ErrorCode> errorOpt(Result<T> const& result)
 	{
 		if (std::holds_alternative<ErrorCode>(result))
 		{
 			return std::get<ErrorCode>(result);
 		}
 		return std::nullopt;
+	}
+
+	template<typename T>
+	Result<T> tryDo(std::function<T()> function)
+	{
+		try
+		{
+			return function();
+		}
+		catch(...)
+		{
+			return ErrorCode::InternalException;
+		}
 	}
 	
 	AQUAXP_API ErrorCode HRToError(HRESULT hr);

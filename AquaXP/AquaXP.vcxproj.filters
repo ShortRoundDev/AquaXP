@@ -210,6 +210,12 @@
     <ClInclude Include="Result.h">
       <Filter>Header Files\Framework</Filter>
     </ClInclude>
+    <ClInclude Include="TextureBuilder.h">
+      <Filter>Header Files\API\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeMapBuilder.h">
+      <Filter>Header Files\API\Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -248,9 +254,6 @@
     <ClCompile Include="OctreeNode.cpp">
       <Filter>Source Files\Helpers\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="CubeMap.cpp">
-      <Filter>Header Files\API\Texture</Filter>
-    </ClCompile>
     <ClCompile Include="NoclipCameraController.cpp">
       <Filter>Source Files\Tools\Camera</Filter>
     </ClCompile>
@@ -286,6 +289,15 @@
     </ClCompile>
     <ClCompile Include="Result.cpp">
       <Filter>Source Files\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureBuilder.cpp">
+      <Filter>Source Files\API\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap.cpp">
+      <Filter>Source Files\API\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMapBuilder.cpp">
+      <Filter>Source Files\API\Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -28,7 +28,6 @@ namespace AquaXP
 
     struct Window
     {
-        bool m_status;
         HINSTANCE m_instance;
         bool m_fullscreen;
         u16 m_width;
@@ -100,18 +99,27 @@ namespace AquaXP
     constexpr sz g_maxActions = 256;
     constexpr sz g_maxGamePads = 4;
 
+    struct ApplicationOptions
+    {
+        optional<bool> vSync;
+        optional<bool> fullscreen;
+        optional<bool> enableTitleBar;
+        optional<bool> fixedTimeStep;
+        optional<HICON> icon;
+        optional<HCURSOR> cursor;
+    };
+
     class Application
     {
     public:
+
         AQUAXP_API Application(
-            u16 width,
-            u16 height,
-            WCHAR const* title,
-            bool vSync = false,
-            bool fullscreen = false,
-            bool enableTitlebar = true,
-            bool fixedTimestep = false
+            Window const& window,
+            std::unique_ptr<Graphics> graphics,
+            StepTimer const& stepTimer,
+            DirectX::Keyboard const& keyboard
         );
+
         AQUAXP_API ~Application() = default;
 
         AQUAXP_API void run(
@@ -214,7 +222,7 @@ namespace AquaXP
         Window m_window;
 
         /* DirectX */
-        Graphics m_graphics;
+        std::unique_ptr<Graphics> m_graphics;
 
         /* DirectXTK */
         DirectX::Keyboard m_keyboard;
@@ -246,6 +254,8 @@ namespace AquaXP
         bool gamePadButtonIsState(GamePadButton button, i32 playerNum, DirectX::GamePad::ButtonStateTracker::ButtonState checkState) const;
         bool mouseButtonIsState(MouseButton button, DirectX::Mouse::ButtonStateTracker::ButtonState checkState) const;
     };
+    
+    AQUAXP_API Result<unique_ptr<Application>> CreateApplication(u16 width, u16 height, WCHAR const* title, ApplicationOptions const& options = ApplicationOptions());
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);

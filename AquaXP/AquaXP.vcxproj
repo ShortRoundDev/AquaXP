@@ -161,6 +161,7 @@
     <ClInclude Include="Concepts.h" />
     <ClInclude Include="ContextHelpers.h" />
     <ClInclude Include="CubeMap.h" />
+    <ClInclude Include="CubeMapBuilder.h" />
     <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="FileHelpers.h" />
     <ClInclude Include="framework.h" />
@@ -185,6 +186,7 @@
     <ClInclude Include="StepTimer.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureBuilder.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="VertexShader.h" />
   </ItemGroup>
@@ -194,6 +196,7 @@
     <ClCompile Include="CollisionHelpers.cpp" />
     <ClCompile Include="ContextHelpers.cpp" />
     <ClCompile Include="CubeMap.cpp" />
+    <ClCompile Include="CubeMapBuilder.cpp" />
     <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="GeometryShader.cpp" />
@@ -216,6 +219,7 @@
     <ClCompile Include="Shapes.cpp" />
     <ClCompile Include="StepTimer.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureBuilder.cpp" />
     <ClCompile Include="VertexShader.cpp" />
   </ItemGroup>
   <ItemGroup>

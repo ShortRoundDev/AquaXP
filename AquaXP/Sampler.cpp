@@ -7,7 +7,7 @@ using namespace AquaXP;
 
 constexpr u16 FILTER_MASK = 0b11111;
 
-static inline D3D11_TEXTURE_ADDRESS_MODE getAddressMode(TextureAddressMode mode)
+static D3D11_TEXTURE_ADDRESS_MODE getAddressMode(TextureAddressMode mode)
 {
     switch (mode)
     {
@@ -38,53 +38,45 @@ static inline D3D11_TEXTURE_ADDRESS_MODE getAddressMode(TextureAddressMode mode)
     }
 }
 
-Sampler::Sampler(
-    ID3D11Device* device,
-    D3D11_FILTER filterType,
-    TextureAddressMode textureAddressMode,
-    XMFLOAT4 border
-)
+Result<Sampler> CreateSampler(ID3D11Device* device, SamplerOptions const& options = SamplerOptions())
 {
     D3D11_SAMPLER_DESC samplerDesc;
-    samplerDesc.Filter = filterType;
+    auto textureAddressMode = options.textureAddressMode.value_or(WrapAll);
     D3D11_TEXTURE_ADDRESS_MODE
         u = getAddressMode(static_cast<TextureAddressMode>(
             static_cast<int>(textureAddressMode) & FILTER_MASK
-        )),
+            )),
         v = getAddressMode(static_cast<TextureAddressMode>(
             (static_cast<int>(textureAddressMode) >> 5) & FILTER_MASK
-        )),
+            )),
         w = getAddressMode(static_cast<TextureAddressMode>(
             (static_cast<int>(textureAddressMode) >> 10) & FILTER_MASK
-        ));
+            ));
 
+    samplerDesc.Filter = options.filter.value_or(D3D11_FILTER_ANISOTROPIC);
     samplerDesc.AddressU = u;
     samplerDesc.AddressV = v;
     samplerDesc.AddressW = w;
+    samplerDesc.MipLODBias = options.mipLODBias.value_or(0.0f);
+    samplerDesc.MaxAnisotropy = options.maxAnisotropy.value_or(16);
+    samplerDesc.ComparisonFunc = options.comparisonFunc.value_or(D3D11_COMPARISON_ALWAYS);
+    auto borderColor = options.borderColor.value_or(XMFLOAT4(0, 0, 0, 0));
+    samplerDesc.BorderColor[0] = borderColor.x;
+    samplerDesc.BorderColor[1] = borderColor.y;
+    samplerDesc.BorderColor[2] = borderColor.z;
+    samplerDesc.BorderColor[3] = borderColor.w;
+    samplerDesc.MinLOD = options.minLOD.value_or(0);
+    samplerDesc.MaxLOD = options.maxLOD.value_or(D3D11_FLOAT32_MAX);
+    samplerDesc.MipLODBias = options.mipLODBias.value_or(0.0f);
 
-    samplerDesc.MipLODBias = 0.0f;
-    samplerDesc.MaxAnisotropy = 16;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-    samplerDesc.BorderColor[0] = border.x;
-    samplerDesc.BorderColor[1] = border.y;
-    samplerDesc.BorderColor[2] = border.z;
-    samplerDesc.BorderColor[3] = border.w;
-    samplerDesc.MinLOD = 0;
-    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    samplerDesc.MipLODBias = 0.0f;
-
-    auto result = device->CreateSamplerState(
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+    auto res = device->CreateSamplerState(
         &samplerDesc,
-        m_samplerState.GetAddressOf()
+        samplerState.GetAddressOf()
     );
-    if (FAILED(result))
+    if (FAILED(res))
     {
-        // TODO: Handle errors here
-        return;
+        return HRToError(res);
     }
-}
-
-void Sampler::use(ID3D11DeviceContext* context, u32 slot) const
-{
-    context->PSSetSamplers(slot, 1, m_samplerState.GetAddressOf());
+    return Sampler(samplerState);
 }
