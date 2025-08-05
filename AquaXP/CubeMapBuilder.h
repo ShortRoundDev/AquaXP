@@ -1,7 +1,7 @@
 #pragma once
 
-#include <CubeMap.h>
-#include <Texture.h>
+#include "CubeMap.h"
+#include "Texture.h"
 
 namespace AquaXP
 {

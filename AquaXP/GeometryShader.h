@@ -1,6 +1,6 @@
 #pragma once
-#include <ShaderHelper.h>
-#include <StringHelpers.h>
+#include "ShaderHelper.h"
+#include "StringHelpers.h"
 
 namespace AquaXP
 {

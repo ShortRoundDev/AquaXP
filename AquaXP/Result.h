@@ -63,6 +63,63 @@ namespace AquaXP
 		FileNotFound
 	};
 
+	inline WCHAR const* ErrorMessage(ErrorCode code)
+	{
+		switch (code)
+		{
+		case ErrorCode::UnknownError:  return L"UnknownError";
+		case ErrorCode::ReBoxFailed:  return L"ReBoxFailed";
+		case ErrorCode::WStringConversionFailure:  return L"WStringConversionFailure";
+		case ErrorCode::NoDisplayModeFound:  return L"NoDisplayModeFound";
+		case ErrorCode::QueryPerformanceCounterFailed:  return L"QueryPerformanceCounterFailed";
+		case ErrorCode::InternalException:  return L"InternalException";
+		case ErrorCode::D3D11ErrorFileNotFound:  return L"D3D11ErrorFileNotFound";
+		case ErrorCode::D3D11ErrorTooManyUniqueStateObjects:  return L"D3D11ErrorTooManyUniqueStateObjects";
+		case ErrorCode::D3D11ErrorTooManyUniqueViewObjects:  return L"D3D11ErrorTooManyUniqueViewObjects";
+		case ErrorCode::D3D11ErrorDeferredContextMapWithoutInitialDiscard:  return L"D3D11ErrorDeferredContextMapWithoutInitialDiscard";
+		case ErrorCode::EFail:  return L"EFail";
+		case ErrorCode::EInvalidArg:  return L"EInvalidArg";
+		case ErrorCode::EOutOfMemory:  return L"EOutOfMemory";
+		case ErrorCode::ENotImplemented:  return L"ENotImplemented";
+		case ErrorCode::SFalse:  return L"SFalse";
+		case ErrorCode::DXGIErrorAccessDenied:  return L"DXGIErrorAccessDenied";
+		case ErrorCode::DXGIErrorAccessLost:  return L"DXGIErrorAccessLost";
+		case ErrorCode::DXGIErrorAlreadyExists:  return L"DXGIErrorAlreadyExists";
+		case ErrorCode::DXGIErrorCannotProtectContent:  return L"DXGIErrorCannotProtectContent";
+		case ErrorCode::DXGIErrorDeviceHung:  return L"DXGIErrorDeviceHung";
+		case ErrorCode::DXGIErrorDeviceRemoved:  return L"DXGIErrorDeviceRemoved";
+		case ErrorCode::DXGIErrorDeviceReset:  return L"DXGIErrorDeviceReset";
+		case ErrorCode::DXGIErrorDriverInternalError:  return L"DXGIErrorDriverInternalError";
+		case ErrorCode::DXGIErrorFrameStatisticsDisjoint:  return L"DXGIErrorFrameStatisticsDisjoint";
+		case ErrorCode::DXGIErrorGraphicsVidPNSourceInUse:  return L"DXGIErrorGraphicsVidPNSourceInUse";
+		case ErrorCode::DXGIErrorInvalidCall:  return L"DXGIErrorInvalidCall";
+		case ErrorCode::DXGIErrorMoreData:  return L"DXGIErrorMoreData";
+		case ErrorCode::DXGIErrorNameAlreadyExists:  return L"DXGIErrorNameAlreadyExists";
+		case ErrorCode::DXGIErrorNonexclusive:  return L"DXGIErrorNonexclusive";
+		case ErrorCode::DXGIErrorNotCurrentlyAvailable:  return L"DXGIErrorNotCurrentlyAvailable";
+		case ErrorCode::DXGIErrorNotFound:  return L"DXGIErrorNotFound";
+		case ErrorCode::DXGIErrorRemoteClientDisconnected:  return L"DXGIErrorRemoteClientDisconnected";
+		case ErrorCode::DXGIErrorRemoteOutOfMemory:  return L"DXGIErrorRemoteOutOfMemory";
+		case ErrorCode::DXGIErrorRestrictToOutputStale:  return L"DXGIErrorRestrictToOutputStale";
+		case ErrorCode::DXGIErrorSDKComponentMissing:  return L"DXGIErrorSDKComponentMissing";
+		case ErrorCode::DXGIErrorSessionDisconnected:  return L"DXGIErrorSessionDisconnected";
+		case ErrorCode::DXGIErrorUnsupported:  return L"DXGIErrorUnsupported";
+		case ErrorCode::DXGIErrorWaitTimeout:  return L"DXGIErrorWaitTimeout";
+		case ErrorCode::DXGIErrorWasStillDrawing:  return L"DXGIErrorWasStillDrawing";
+		case ErrorCode::FileError:  return L"FileError";
+		case ErrorCode::DepthBufferCreationFailed:  return L"DepthBufferCreationFailed";
+		case ErrorCode::Texture2DCreationFailed:  return L"Texture2DCreationFailed";
+		case ErrorCode::SRVCreationFailed:  return L"SRVCreationFailed";
+		case ErrorCode::DSVCreationFailed:  return L"DSVCreationFailed";
+		case ErrorCode::RTVCreationFailed:  return L"RTVCreationFailed";
+		case ErrorCode::WICError:  return L"WICError";
+		case ErrorCode::MissingTexture2D:  return L"MissingTexture2D";
+		case ErrorCode::EmptyCBuffer:  return L"EmptyCBuffer";
+		case ErrorCode::FileNotFound:  return L"FileNotFound";
+		default: return L"Unknown Error";
+		}
+	}
+
 	template<typename T>
 	using Result = std::variant<T, ErrorCode>;
 

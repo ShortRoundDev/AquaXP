@@ -17,7 +17,6 @@ namespace AquaXP
             Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout
         );
 
-        AQUAXP_API void use(ID3D11DeviceContext* context);
         [[nodiscard]] AQUAXP_API Microsoft::WRL::ComPtr<ID3D11VertexShader> getShader() const;
         [[nodiscard]] AQUAXP_API Microsoft::WRL::ComPtr<ID3D11InputLayout> getInputLayout() const;
 
@@ -175,4 +174,6 @@ namespace AquaXP
             std::get<1>(inputLayout)
         );
     }
+
+    AQUAXP_API void UseVertexShader(ID3D11DeviceContext* context, VertexShader const& shader);
 }

@@ -140,7 +140,7 @@ int main()
     auto device = graphics.getDevice().Get();
     auto context = graphics.getContext().Get();
 
-    /* Build the Vertex Input Layot with default data formats*/
+    /* Build the Vertex Input Layout with default data formats*/
     InputLayoutBuilder<MyVector> layoutBuilder;
     layoutBuilder
         .addPosition()
@@ -155,7 +155,7 @@ int main()
         return 2;
     }
     auto vs = get(vsResult);
-    vs.use(context);
+    UseVertexShader(context, vs);
 
     auto shaderRes = LoadPixelShader(device, L"WorldPixel.cso");
     if (!isOk(shaderRes))
